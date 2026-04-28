@@ -1,62 +1,108 @@
-<<<<<<< HEAD
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# KELOMPOK ELCO (Kelompok 1)
+### Exclusive Local Coffee Origin
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+| NIM | Nama |
+|-----|------|
+| 251402028 | Kevin Rodrigues Pandiangan |
+| 251402035 | Rafa Fabian Syahputra |
+| 251402057 | Jonathan Mulianta Brema Ginting Suka |
+| 251402068 | Muhammad Farhan Praditya Harahap |
+| 251402071 | Diaz Prananta Ginting |
+| 251402127 | Syamil Mali Uzair |
+| 251402139 | Morris Vincent Abbiel Situmorang |
 
-## About Laravel
+### Mata Kuliah
+Pemrograman Web Lanjut (PWL)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+# ELCO — Exclusive Local Coffee Origin
+### Sistem Manajemen F&B untuk Café
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+ELCO (Exclusive Local Coffee Origin) merupakan sistem manajemen Food & Beverage yang dirancang untuk membantu pengelolaan operasional café secara terpusat. Sistem ini dibuat untuk mendukung pengelolaan data cabang, stok, transaksi kasir, keuangan, menu, promo, serta laporan operasional sehingga seluruh aktivitas bisnis café dapat tercatat secara digital dan terintegrasi.
 
-## Learning Laravel
+Sistem ELCO memiliki tiga role utama yaitu manager pusat, admin cabang, dan kasir, dimana setiap role memiliki fungsi dan tanggung jawab yang berbeda sesuai kebutuhan operasional.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 👥 Role User Sistem
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### 1. Manager Pusat
+Manager pusat berfungsi sebagai pengontrol utama seluruh cabang dengan hak akses:
+- CRUD stok dan verifikasi permintaan stok dari cabang
+- CRUD data cabang
+- Mengelola menu, harga dasar, dan promo global
+- Melakukan verifikasi keuangan dan laporan cabang
 
-## Agentic Development
+### 2. Admin Cabang
+Admin cabang berfokus pada operasional harian cabang, meliputi:
+- Memantau stok cabang
+- Mengajukan penambahan stok ke pusat
+- Mencatat pengeluaran operasional cabang
+- Mengajukan kebutuhan alat operasional
+- Membuat promo cabang
+- Membatalkan transaksi bermasalah
+- Mengirim laporan mingguan ke pusat
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### 3. Kasir
+Kasir bertugas melakukan transaksi penjualan, dengan fitur:
+- Memilih menu yang tersedia
+- Memproses transaksi pelanggan
+- Mengurangi stok otomatis saat transaksi selesai
 
-```bash
-composer require laravel/boost --dev
+---
 
-php artisan boost:install
-```
+## ⚙️ Fitur Utama Sistem
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### ✅ Mengelola Stok
+Sistem menyediakan pengelolaan stok per cabang, pengajuan permintaan stok ke pusat, proses verifikasi, serta pencatatan log perubahan stok.
 
-## Contributing
+### ✅ Mengelola Cabang
+Manager pusat dapat menambah, menghapus, mengaktifkan, maupun menonaktifkan data cabang.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### ✅ Mengelola Keuangan
+Sistem mencatat pengeluaran operasional cabang, melakukan verifikasi pusat, serta menghasilkan laporan keuangan.
 
-## Code of Conduct
+### ✅ Fitur Kasir
+Kasir dapat melakukan pemesanan menu dan sistem akan mengurangi stok bahan secara otomatis ketika transaksi selesai.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### ✅ Laporan Grafik
+Sistem menampilkan laporan pemasukan, pengeluaran, dan stok dalam bentuk grafik untuk mempermudah monitoring.
 
-## Security Vulnerabilities
+### ✅ Mengelola Menu & Harga
+Manager pusat dapat melakukan CRUD menu, menentukan harga global, serta mengatur promo global maupun promo cabang.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+##  Aturan Bisnis Awal Sistem
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-=======
-# TUBES-PWL-KEL1
->>>>>>> 7a6fded36d1f2b78f110030e1bdd3e0c3d873639
+- Sistem memiliki tiga role pengguna: manager pusat, admin cabang, dan kasir.
+- Cabang hanya dapat dibuat dan diaktifkan oleh manager pusat.
+- Stok dikelola per cabang melalui proses request dan verifikasi pusat.
+- Menu dan harga dasar hanya dapat dikelola oleh manager pusat.
+- Promo global dibuat oleh pusat dan promo cabang memiliki batas tertentu.
+- Kasir tidak dapat mengubah transaksi completed, sedangkan pembatalan transaksi dilakukan oleh admin cabang.
+
+---
+
+#  Revisi dan Penyesuaian Sistem Berdasarkan Masukan Dosen
+
+### 1. Fitur Manager Pusat
+Pada rancangan awal, manager pusat memiliki fitur laporan stok pusat. Setelah revisi, fitur tersebut dihapus karena laporan dari cabang bisa saja tidak diajukan ketika stok pusat sedang kosong. Manager pusat difokuskan pada verifikasi pengajuan cabang dan laporan operasional.
+
+### 2. Fitur Admin Cabang
+Pada rancangan awal, pengajuan stok dan pengajuan alat operasional dibuat dalam halaman terpisah. Setelah revisi, kedua pengajuan tersebut digabungkan menjadi satu menu pengajuan kebutuhan operasional agar proses pengajuan lebih sederhana dan efisien.
+
+### 3. Fitur Kasir dan Pembatalan Transaksi
+Pembatalan transaksi tidak dapat dilakukan untuk semua jenis transaksi. Sistem membatasi bahwa pembatalan hanya dapat dilakukan apabila pesanan belum masuk tahap pengolahan. Jika bahan sudah diolah atau pesanan sudah diproses, maka transaksi tidak dapat dibatalkan karena dapat menimbulkan kerugian operasional.
+
+### 4. Perubahan Periode Laporan
+Pada rancangan awal, laporan dilakukan secara mingguan dan bulanan. Setelah revisi, laporan disederhanakan menjadi laporan bulanan saja agar monitoring lebih ringkas dan tidak membebani admin cabang.
+
+---
+
+## 🎯 Hasil Akhir Pengembangan
+
+Dengan adanya revisi tersebut, sistem ELCO menjadi lebih sederhana dalam penggunaan, lebih realistis terhadap kondisi operasional café, meminimalisir fitur yang kurang dibutuhkan, serta menghasilkan alur bisnis yang lebih efisien antara pusat dan cabang.
+
+Sistem ini diharapkan mampu menjadi solusi digital untuk manajemen café multi cabang yang terintegrasi.
