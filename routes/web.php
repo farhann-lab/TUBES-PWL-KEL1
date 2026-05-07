@@ -29,7 +29,7 @@ Route::middleware(['auth', 'role:manager'])
     ->prefix('manager')
     ->name('manager.')
     ->group(function () {
-        Route::get('/dashboard', fn() => view('manager.dashboard'))->name('dashboard');
+        Route::get('/dashboard', fn() => view('layouts.manager'))->name('manager');
     });
 
 Route::middleware(['auth', 'role:admin'])
@@ -45,5 +45,9 @@ Route::middleware(['auth', 'role:kasir'])
     ->group(function () {
         Route::get('/dashboard', fn() => view('kasir.dashboard'))->name('dashboard');
     });
+
+Route::get('/content/manager', function () {
+    return view('content.manager'); 
+});
 
 require __DIR__.'/auth.php';
