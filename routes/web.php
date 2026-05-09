@@ -29,7 +29,7 @@ Route::middleware(['auth', 'role:manager'])
     ->prefix('manager')
     ->name('manager.')
     ->group(function () {
-        Route::get('/dashboard', fn() => view('layouts.manager'))->name('manager');
+        Route::get('/dashboard', fn() => view('manager.dashboard'))->name('dashboard');
     });
 
 Route::middleware(['auth', 'role:admin'])

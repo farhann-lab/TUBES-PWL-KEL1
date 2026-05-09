@@ -22,7 +22,7 @@
         @include('components.manager.navbar')
 
         <div class="flex-1 overflow-y-auto p-8 pt-0 hide-scrollbar">
-            @yield('content.manager')
+            @yield('content')
         </div>
         
     </main>
