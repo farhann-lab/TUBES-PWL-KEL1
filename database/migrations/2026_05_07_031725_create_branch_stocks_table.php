@@ -11,17 +11,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('branch_stocks', function (Blueprint $table) {
+        Schema::create('menus', function (Blueprint $table) {
             $table->id();
+            $table->string('name');                         // "Kopi Arabika"
+            $table->text('description')->nullable();
+            $table->enum('category', [
+                'minuman',
+                'makanan',
+                'snack'
+            ]);
+            $table->decimal('base_price', 10, 2);           // harga dasar dari pusat
+            $table->string('image')->nullable();
+            $table->boolean('is_available')->default(true);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('branch_stocks');
+        Schema::dropIfExists('menus');
     }
 };
