@@ -14,26 +14,38 @@
         <!-- Navigation -->
         <nav class="flex-1 px-4 space-y-1 overflow-y-auto hide-scrollbar">
             <!-- Active Menu -->
-            <a href="#" class="flex items-center gap-3 px-4 py-3 bg-[#F6F3F0] text-elco-coffee rounded-2xl font-semibold smooth-transition">
+            <a href="{{ route('manager.dashboard') }}"
+            class="flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold smooth-transition
+            {{ request()->routeIs('manager.dashboard') ? 'bg-[#F6F3F0] text-elco-coffee' : 'text-gray-500 hover:bg-gray-50 hover:text-elco-coffee' }}">
                 <i class="ph-fill ph-squares-four text-xl"></i>
                 Dashboard
                 <i class="ph ph-arrow-right ml-auto"></i>
             </a>
             
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-elco-coffee rounded-2xl font-medium smooth-transition">
+            <a href="{{ route('manager.branches.index') }}"
+                class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-elco-coffee rounded-2xl font-medium smooth-transition
+                {{ request()->routeIs('manager.branches*') ? 'bg-[#F6F3F0] !text-elco-coffee font-semibold' : '' }}">
                 <i class="ph ph-storefront text-xl"></i> Cabang
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-elco-coffee rounded-2xl font-medium smooth-transition">
-                <i class="ph ph-package text-xl"></i> Manajemen Stok
+            <a href="{{ route('manager.stock-requests.index') }}"
+                class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-elco-coffee rounded-2xl font-medium smooth-transition
+                {{ request()->routeIs('manager.stock-requests*') ? 'bg-[#F6F3F0] !text-elco-coffee font-semibold' : '' }}">
+                    <i class="ph ph-package text-xl"></i> Manajemen Stok
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-elco-coffee rounded-2xl font-medium smooth-transition">
+            <a href="{{ route('manager.transactions.index') }}"
+            class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-elco-coffee rounded-2xl font-medium smooth-transition
+            {{ request()->routeIs('manager.transactions*') ? 'bg-[#F6F3F0] !text-elco-coffee font-semibold' : '' }}">
                 <i class="ph ph-receipt text-xl"></i> Transaksi
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-elco-coffee rounded-2xl font-medium smooth-transition">
+            <a href="{{ route('manager.reports.index') }}"
+            class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-elco-coffee rounded-2xl font-medium smooth-transition
+            {{ request()->routeIs('manager.reports*') ? 'bg-[#F6F3F0] !text-elco-coffee font-semibold' : '' }}">
                 <i class="ph ph-chart-line-up text-xl"></i> Laporan Keuangan
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-elco-coffee rounded-2xl font-medium smooth-transition">
-                <i class="ph ph-coffee-bean text-xl"></i> Menu & Promo
+            <a href="{{ route('manager.promotions.index') }}"
+                class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-elco-coffee rounded-2xl font-medium smooth-transition
+                {{ request()->routeIs('manager.promotions*') ? 'bg-[#F6F3F0] !text-elco-coffee font-semibold' : '' }}">
+                    <i class="ph ph-coffee-bean text-xl"></i> Menu & Promo
             </a>
 
             <!-- Gradient Card in Sidebar (Matching Reference) -->
@@ -54,11 +66,16 @@
             </div>
 
             <div class="px-2 mb-2 mt-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Lainnya</div>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-elco-coffee rounded-2xl font-medium smooth-transition">
+            <a href="{{ route('profile.edit') }}"
+            class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-elco-coffee rounded-2xl font-medium smooth-transition">
                 <i class="ph ph-gear text-xl"></i> Pengaturan
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-2xl font-medium smooth-transition mt-2">
-                <i class="ph ph-sign-out text-xl"></i> Keluar
-            </a>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" 
+                    class="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-2xl font-medium smooth-transition mt-2">
+                    <i class="ph ph-sign-out text-xl"></i> Keluar
+                </button>
+            </form>
         </nav>
     </aside>
