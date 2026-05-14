@@ -14,6 +14,11 @@ use App\Http\Controllers\Manager\ExpenseController as ManagerExpense;
 use App\Http\Controllers\Manager\PromotionController as ManagerPromo;
 use App\Http\Controllers\Manager\ReportController as ManagerReport;
 use App\Http\Controllers\Manager\TransactionController as ManagerTransaction;
+use App\Http\Controllers\Admin\StockRequestController as AdminStockRequest;
+use App\Http\Controllers\Admin\ExpenseController as AdminExpense;
+use App\Http\Controllers\Admin\PromotionController as AdminPromo;
+use App\Http\Controllers\Admin\TransactionController as AdminTransaction;
+use App\Http\Controllers\Admin\ReportController as AdminReport;
 
 Route::get('/', function () {
     if (!auth()->check()) return redirect('/login');
@@ -68,7 +73,23 @@ Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-        Route::get('/dashboard', fn() => view('admin.dashboard'))->name('dashboard');
+        Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
+        Route::get('stocks', [StockController::class, 'index'])->name('stocks.index');
+        Route::resource('stock-requests', AdminStockRequest::class)
+             ->only(['index', 'create', 'store']);
+        Route::resource('expenses', AdminExpense::class)
+            ->only(['index', 'create', 'store', 'destroy']);
+        Route::resource('promotions', AdminPromo::class)
+             ->only(['index', 'create', 'store', 'destroy']);
+        Route::get('transactions', [AdminTransaction::class, 'index'])->name('transactions.index');
+        Route::post('transactions/{transaction}/cancel', [AdminTransaction::class, 'cancel'])->name('transactions.cancel');
+        Route::get('reports', [AdminReport::class, 'index'])->name('reports.index');
+        Route::get('reports/export', [AdminReport::class, 'export'])->name('reports.export');
+        Route::post('stock-requests/{stockRequest}/confirm-delivery', [AdminStockRequest::class, 'confirmDelivery'])
+            ->name('stock-requests.confirm-delivery');
+        Route::get('shifts', [ShiftScheduleController::class, 'index'])->name('shifts.index');
+        Route::post('shifts', [ShiftScheduleController::class, 'store'])->name('shifts.store');
+        Route::delete('shifts/{shiftSchedule}', [ShiftScheduleController::class, 'destroy'])->name('shifts.destroy');
     });
 
 Route::middleware(['auth', 'role:kasir'])
