@@ -21,13 +21,13 @@ use App\Http\Controllers\Admin\TransactionController as AdminTransaction;
 use App\Http\Controllers\Admin\ReportController as AdminReport;
 
 Route::get('/', function () {
-    if (!auth()->check()) return redirect('/login');
+    if (!auth()->check()) return view('/welcome');
 
     return match(auth()->user()->role) {
         'manager' => redirect('/manager/dashboard'),
         'admin'   => redirect('/admin/dashboard'),
         'kasir'   => redirect('/kasir/dashboard'),
-        default   => redirect('/login'),
+        default   => view('/welcome'),
     };
 });
 
