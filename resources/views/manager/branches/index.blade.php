@@ -93,43 +93,22 @@
 
                     {{-- Aksi --}}
                     <td class="py-4 px-6">
-                        @if($branch->trashed())
-                            {{-- Restore --}}
-                            <form action="{{ route('manager.branches.restore', $branch->id) }}"
-                                  method="POST" class="inline">
-                                @csrf
-                                <button type="submit"
-                                    class="text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl hover:bg-emerald-100 smooth-transition">
-                                    <i class="ph ph-arrow-counter-clockwise"></i> Pulihkan
-                                </button>
-                            </form>
-                        @else
                             <div class="flex items-center gap-2">
-                                {{-- Edit --}}
                                 <a href="{{ route('manager.branches.edit', $branch) }}"
-                                   class="text-xs font-medium text-elco-coffee bg-elco-cream px-3 py-2 rounded-xl hover:bg-elco-latte/30 smooth-transition">
+                                class="text-xs font-medium text-elco-coffee bg-elco-cream px-3 py-2 rounded-xl hover:bg-elco-latte/30 smooth-transition">
                                     <i class="ph ph-pencil"></i> Edit
                                 </a>
-                                {{-- Hapus --}}
-                                <form id="form-hapus-{{ $branch->id }}" method="POST"
-                                    action="{{ route('manager.branches.destroy', $branch->id) }}">
+                                <form action="{{ route('manager.branches.destroy', $branch->id) }}"
+                                    method="POST" class="inline"
+                                    onsubmit="return confirm('Hapus cabang {{ addslashes($branch->name) }} secara permanen? Tindakan ini tidak dapat dibatalkan!')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button"
-                                        onclick="elcoConfirm({
-                                            title: 'Hapus Cabang?',
-                                            text: 'Cabang {{ addslashes($branch->name) }} akan dinonaktifkan.',
-                                            confirmText: 'Ya, Hapus',
-                                            confirmColor: '#ef4444',
-                                            icon: 'warning',
-                                            onConfirm: () => document.getElementById('form-hapus-{{ $branch->id }}').submit()
-                                        })"
+                                    <button type="submit"
                                         class="text-xs font-medium text-red-500 bg-red-50 px-3 py-2 rounded-xl hover:bg-red-100 smooth-transition">
                                         <i class="ph ph-trash"></i> Hapus
                                     </button>
                                 </form>
                             </div>
-                        @endif
                     </td>
                 </tr>
                 @empty
@@ -144,5 +123,50 @@
         </table>
     </div>
 </div>
+{{-- Modal Hapus Cabang --}}
+<div id="deleteBranchModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md mx-4">
+        <div class="w-14 h-14 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center text-3xl mx-auto mb-4">
+            <i class="ph-fill ph-warning"></i>
+        </div>
+        <h3 class="font-display font-bold text-gray-800 text-lg text-center mb-1">Hapus Cabang?</h3>
+        <p class="text-sm text-gray-500 text-center mb-6">Cabang <strong id="deleteBranchName"></strong> akan dinonaktifkan.</p>
 
+        <form id="deleteBranchForm" method="POST" class="space-y-4">
+            @csrf
+            @method('DELETE')
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    Alasan Penghapusan <span class="text-gray-400 font-normal">(opsional)</span>
+                </label>
+                <textarea name="delete_reason" rows="3"
+                    placeholder="Tuliskan alasan penghapusan cabang ini..."
+                    class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-300 text-sm resize-none"></textarea>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="closeDeleteBranchModal()"
+                    class="flex-1 py-3 rounded-2xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50">
+                    Batal
+                </button>
+                <button type="submit"
+                    class="flex-1 py-3 rounded-2xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600 smooth-transition">
+                    <i class="ph ph-trash mr-1"></i> Ya, Hapus
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 @endsection
+<!-- 
+@push('scripts')
+<script>
+function openDeleteBranchModal(id, name) {
+    document.getElementById('deleteBranchName').textContent = name;
+    document.getElementById('deleteBranchForm').action = `/manager/branches/${id}`;
+    document.getElementById('deleteBranchModal').classList.remove('hidden');
+}
+function closeDeleteBranchModal() {
+    document.getElementById('deleteBranchModal').classList.add('hidden');
+}
+</script>
+@endpush -->

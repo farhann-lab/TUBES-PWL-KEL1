@@ -66,7 +66,7 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
                         Kategori <span class="text-red-500">*</span>
                     </label>
-                    <select name="category"
+                    <select name="category" id="categorySelect" onchange="handleCategoryChange()"
                         class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 focus:border-elco-mocha text-sm smooth-transition bg-white
                         @error('category') border-red-400 @enderror">
                         <option value="">Pilih Kategori</option>
@@ -94,12 +94,90 @@
                 </div>
             </div>
 
-            {{-- Info distribusi --}}
-            <div class="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-2xl p-4">
+            {{-- ══════════════════════════════════════════════════════════
+                 SECTION MINUMAN: Resep Bahan Baku
+                 Muncul hanya jika kategori = minuman
+            ══════════════════════════════════════════════════════════ --}}
+            <div id="sectionMinuman" class="hidden space-y-4">
+                <div class="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                    <i class="ph ph-flask text-amber-500 text-xl mt-0.5 flex-shrink-0"></i>
+                    <div>
+                        <p class="text-sm font-semibold text-amber-800">Resep Bahan Baku</p>
+                        <p class="text-xs text-amber-600 mt-0.5">
+                            Setiap bahan akan dikurangi dari stok cabang saat transaksi berhasil.
+                            Stok dikembalikan jika transaksi dibatalkan.
+                        </p>
+                    </div>
+                </div>
+
+                {{-- List Bahan --}}
+                <div id="ingredientList" class="space-y-3">
+                    {{-- Baris bahan awal --}}
+                    <div class="ingredient-row grid grid-cols-[1fr_auto_auto_auto] gap-2 items-center">
+                        <select name="ingredients[0][ingredient_id]"
+                            class="px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm bg-white">
+                            <option value="">— Pilih Bahan —</option>
+                            @foreach($ingredients as $ing)
+                            <option value="{{ $ing->id }}">
+                                {{ $ing->nama_bahan }} ({{ $ing->satuan }})
+                            </option>
+                            @endforeach
+                        </select>
+                        <input type="number" name="ingredients[0][jumlah]"
+                            placeholder="Jumlah" min="0.001" step="0.001"
+                            class="w-28 px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm">
+                        <span class="ingredient-satuan text-xs text-gray-400 w-10 text-center">—</span>
+                        <button type="button" onclick="removeIngredient(this)"
+                            class="w-8 h-8 rounded-lg bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 smooth-transition flex-shrink-0">
+                            <i class="ph ph-trash text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Tombol tambah bahan --}}
+                <button type="button" onclick="addIngredient()"
+                    class="w-full py-2.5 rounded-xl border-2 border-dashed border-gray-200 text-sm text-gray-500 hover:border-elco-mocha hover:text-elco-coffee smooth-transition flex items-center justify-center gap-2">
+                    <i class="ph ph-plus"></i> Tambah Bahan
+                </button>
+
+                @error('ingredients')
+                    <p class="text-red-500 text-xs">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- ══════════════════════════════════════════════════════════
+                 SECTION MAKANAN/SNACK: Stok Awal Produk Jadi
+                 Muncul hanya jika kategori = makanan / snack
+            ══════════════════════════════════════════════════════════ --}}
+            <div id="sectionMakanan" class="hidden space-y-4">
+                <div class="flex items-center gap-3 bg-purple-50 border border-purple-200 rounded-2xl p-4">
+                    <i class="ph ph-package text-purple-500 text-xl mt-0.5 flex-shrink-0"></i>
+                    <div>
+                        <p class="text-sm font-semibold text-purple-800">Stok Produk Jadi</p>
+                        <p class="text-xs text-purple-600 mt-0.5">
+                            Makanan & Snack dihitung per pcs produk jadi, bukan bahan baku.
+                            Stok berkurang 1 per item terjual.
+                        </p>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Stok Awal per Cabang (pcs)
+                    </label>
+                    <input type="number" name="stok_awal" value="{{ old('stok_awal', 0) }}"
+                        placeholder="contoh: 10" min="0"
+                        class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 focus:border-elco-mocha text-sm smooth-transition">
+                    <p class="text-xs text-gray-400 mt-1">
+                        Stok ini akan didistribusikan ke semua cabang aktif.
+                    </p>
+                </div>
+            </div>
+
+            {{-- Info distribusi (default, saat kategori belum dipilih) --}}
+            <div id="infoDefault" class="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-2xl p-4">
                 <i class="ph ph-info text-blue-500 text-xl mt-0.5"></i>
                 <p class="text-sm text-blue-600">
-                    Menu ini akan otomatis terdistribusi ke <strong>semua cabang aktif</strong>
-                    dengan stok awal 0. Admin cabang dapat mengajukan penambahan stok.
+                    Pilih kategori menu untuk melihat konfigurasi stok yang sesuai.
                 </p>
             </div>
 
@@ -119,8 +197,87 @@
 </div>
 @endsection
 
+@php
+    $ingredientsJson = $ingredients->map(function($i) {
+        return ['id' => $i->id, 'nama' => $i->nama_bahan, 'satuan' => $i->satuan];
+    });
+@endphp
+
 @push('scripts')
 <script>
+// ── Data bahan dari server ────────────────────────────────────────────────────
+const ingredientsData = @json($ingredientsJson);
+
+let ingIndex = 1; // mulai dari 1 karena index 0 sudah ada
+
+// ── Handle perubahan kategori ─────────────────────────────────────────────────
+function handleCategoryChange() {
+    const cat = document.getElementById('categorySelect').value;
+
+    document.getElementById('sectionMinuman').classList.add('hidden');
+    document.getElementById('sectionMakanan').classList.add('hidden');
+    document.getElementById('infoDefault').classList.add('hidden');
+
+    if (cat === 'minuman') {
+        document.getElementById('sectionMinuman').classList.remove('hidden');
+    } else if (cat === 'makanan' || cat === 'snack') {
+        document.getElementById('sectionMakanan').classList.remove('hidden');
+    } else {
+        document.getElementById('infoDefault').classList.remove('hidden');
+    }
+}
+
+// ── Tambah baris bahan ────────────────────────────────────────────────────────
+function addIngredient() {
+    const list = document.getElementById('ingredientList');
+    const div  = document.createElement('div');
+    div.className = 'ingredient-row grid grid-cols-[1fr_auto_auto_auto] gap-2 items-center';
+
+    const options = ingredientsData.map(i =>
+        `<option value="${i.id}">${i.nama} (${i.satuan})</option>`
+    ).join('');
+
+    div.innerHTML = `
+        <select name="ingredients[${ingIndex}][ingredient_id]"
+            onchange="updateSatuan(this)"
+            class="px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm bg-white">
+            <option value="">— Pilih Bahan —</option>
+            ${options}
+        </select>
+        <input type="number" name="ingredients[${ingIndex}][jumlah]"
+            placeholder="Jumlah" min="0.001" step="0.001"
+            class="w-28 px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm">
+        <span class="ingredient-satuan text-xs text-gray-400 w-10 text-center">—</span>
+        <button type="button" onclick="removeIngredient(this)"
+            class="w-8 h-8 rounded-lg bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 smooth-transition flex-shrink-0">
+            <i class="ph ph-trash text-sm"></i>
+        </button>
+    `;
+    list.appendChild(div);
+    ingIndex++;
+}
+
+// ── Hapus baris bahan ─────────────────────────────────────────────────────────
+function removeIngredient(btn) {
+    const rows = document.querySelectorAll('.ingredient-row');
+    if (rows.length <= 1) return; // minimal 1 bahan
+    btn.closest('.ingredient-row').remove();
+}
+
+// ── Update label satuan saat bahan dipilih ────────────────────────────────────
+function updateSatuan(select) {
+    const id  = parseInt(select.value);
+    const ing = ingredientsData.find(i => i.id === id);
+    const row = select.closest('.ingredient-row');
+    const span = row.querySelector('.ingredient-satuan');
+    span.textContent = ing ? ing.satuan : '—';
+}
+
+// Pasang listener satuan untuk row pertama
+document.querySelector('select[name="ingredients[0][ingredient_id]"]')
+    ?.addEventListener('change', function() { updateSatuan(this); });
+
+// ── Preview gambar ────────────────────────────────────────────────────────────
 function previewImage(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
@@ -132,33 +289,11 @@ function previewImage(input) {
         reader.readAsDataURL(input.files[0]);
     }
 }
-</script>
-<script>
-// Toggle field nama item berdasarkan tipe
-document.querySelectorAll('input[name="type"]').forEach(radio => {
-    radio.addEventListener('change', function() {
-        const isStock = this.value === 'stock';
-        document.getElementById('stockSelect').classList.toggle('hidden', !isStock);
-        document.getElementById('operationalInput').classList.toggle('hidden', isStock);
 
-        // Sync nilai ke field yang aktif
-        document.getElementById('itemNameSelect').required = isStock;
-        document.getElementById('itemNameOps').required    = !isStock;
-    });
-});
-
-// Sebelum submit, satukan nilai item_name
-document.querySelector('form').addEventListener('submit', function(e) {
-    const type = document.querySelector('input[name="type"]:checked')?.value;
-    if (type === 'operational') {
-        // Buat hidden input dengan nama item_name
-        const val = document.getElementById('itemNameOps').value;
-        const hidden = document.createElement('input');
-        hidden.type  = 'hidden';
-        hidden.name  = 'item_name';
-        hidden.value = val;
-        this.appendChild(hidden);
-    }
+// Init: handle old() nilai kategori saat ada validation error
+document.addEventListener('DOMContentLoaded', () => {
+    const cat = document.getElementById('categorySelect').value;
+    if (cat) handleCategoryChange();
 });
 </script>
 @endpush

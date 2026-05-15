@@ -3,48 +3,28 @@
 @section('content')
 <div class="max-w-2xl mx-auto">
 
-    {{-- Header --}}
     <div class="flex items-center gap-4 mb-6">
-        <a href="{{ route('manager.menus.index') }}"
+        <a href="{{ route('manager.promotions.index') }}"
            class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-soft hover:shadow-hover smooth-transition text-gray-500 hover:text-elco-coffee">
             <i class="ph ph-arrow-left"></i>
         </a>
         <div>
-            <h2 class="text-xl font-display font-bold text-gray-800">Tambah Menu Baru</h2>
-            <p class="text-sm text-gray-500">Menu akan otomatis terdistribusi ke semua cabang aktif</p>
+            <h2 class="text-xl font-display font-bold text-gray-800">Buat Promo Global</h2>
+            <p class="text-sm text-gray-500">Berlaku untuk semua cabang ELCO</p>
         </div>
     </div>
 
     <div class="bg-white rounded-3xl shadow-soft p-8">
-        <form action="{{ route('manager.menus.store') }}" method="POST"
-              enctype="multipart/form-data" class="space-y-6">
+        <form action="{{ route('manager.promotions.store') }}" method="POST" class="space-y-6">
             @csrf
 
-            {{-- Preview Gambar --}}
-            <div class="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-2xl p-6 cursor-pointer hover:border-elco-mocha smooth-transition"
-                 onclick="document.getElementById('imageInput').click()">
-                <div id="imagePreview" class="hidden mb-3">
-                    <img id="previewImg" src="" class="h-32 rounded-xl object-cover">
-                </div>
-                <div id="uploadPlaceholder">
-                    <i class="ph ph-image text-4xl text-gray-300 block text-center mb-2"></i>
-                    <p class="text-sm text-gray-400 text-center">Klik untuk upload foto menu</p>
-                    <p class="text-xs text-gray-300 text-center mt-1">JPG, PNG, WEBP — Maks 2MB</p>
-                </div>
-                <input type="file" id="imageInput" name="image" accept="image/*" class="hidden"
-                       onchange="previewImage(this)">
-            </div>
-            @error('image')
-                <p class="text-red-500 text-xs -mt-4">{{ $message }}</p>
-            @enderror
-
-            {{-- Nama Menu --}}
+            {{-- Nama --}}
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    Nama Menu <span class="text-red-500">*</span>
+                    Nama Promo <span class="text-red-500">*</span>
                 </label>
                 <input type="text" name="name" value="{{ old('name') }}"
-                    placeholder="contoh: Kopi Arabika Gayo"
+                    placeholder="contoh: Buy 1 Get 1 Latte"
                     class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 focus:border-elco-mocha text-sm smooth-transition
                     @error('name') border-red-400 @enderror">
                 @error('name')
@@ -55,63 +35,96 @@
             {{-- Deskripsi --}}
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Deskripsi</label>
-                <textarea name="description" rows="3"
-                    placeholder="Deskripsi singkat menu..."
-                    class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 focus:border-elco-mocha text-sm smooth-transition resize-none">{{ old('description') }}</textarea>
+                <textarea name="description" rows="2"
+                    placeholder="Ketentuan promo..."
+                    class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm smooth-transition resize-none">{{ old('description') }}</textarea>
             </div>
 
-            {{-- Kategori & Harga --}}
+            {{-- Tipe & Nilai Diskon --}}
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Kategori <span class="text-red-500">*</span>
+                        Tipe Diskon <span class="text-red-500">*</span>
                     </label>
-                    <select name="category"
-                        class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 focus:border-elco-mocha text-sm smooth-transition bg-white
-                        @error('category') border-red-400 @enderror">
-                        <option value="">Pilih Kategori</option>
-                        <option value="minuman" {{ old('category') === 'minuman' ? 'selected' : '' }}>☕ Minuman</option>
-                        <option value="makanan" {{ old('category') === 'makanan' ? 'selected' : '' }}>🍱 Makanan</option>
-                        <option value="snack"   {{ old('category') === 'snack'   ? 'selected' : '' }}>🍪 Snack</option>
+                    <select name="discount_type" id="discountType"
+                        onchange="updateDiscountLabel()"
+                        class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm smooth-transition bg-white">
+                        <option value="percentage" {{ old('discount_type') === 'percentage' ? 'selected' : '' }}>% Persentase</option>
+                        <option value="fixed"      {{ old('discount_type') === 'fixed'      ? 'selected' : '' }}>Rp Nominal</option>
                     </select>
-                    @error('category')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
                 </div>
-
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Harga Dasar (Rp) <span class="text-red-500">*</span>
+                        Nilai Diskon <span class="text-red-500">*</span>
                     </label>
-                    <input type="number" name="base_price" value="{{ old('base_price') }}"
-                        placeholder="contoh: 25000"
-                        min="0"
-                        class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 focus:border-elco-mocha text-sm smooth-transition
-                        @error('base_price') border-red-400 @enderror">
-                    @error('base_price')
+                    <div class="relative">
+                        <span id="discountPrefix" class="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">%</span>
+                        <input type="number" name="discount_value" value="{{ old('discount_value') }}"
+                            placeholder="0" min="0"
+                            class="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm smooth-transition
+                            @error('discount_value') border-red-400 @enderror">
+                    </div>
+                    @error('discount_value')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
 
-            {{-- Info distribusi --}}
+            {{-- Min Pembelian --}}
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    Minimum Pembelian (Rp)
+                    <span class="text-gray-400 font-normal">— opsional</span>
+                </label>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">Rp</span>
+                    <input type="number" name="min_purchase" value="{{ old('min_purchase', 0) }}"
+                        min="0"
+                        class="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm smooth-transition">
+                </div>
+            </div>
+
+            {{-- Periode --}}
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Tanggal Mulai <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" name="start_date" value="{{ old('start_date', now()->format('Y-m-d')) }}"
+                        class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm smooth-transition
+                        @error('start_date') border-red-400 @enderror">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Tanggal Berakhir <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" name="end_date" value="{{ old('end_date') }}"
+                        class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm smooth-transition
+                        @error('end_date') border-red-400 @enderror">
+                    @error('end_date')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            {{-- Info --}}
             <div class="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-2xl p-4">
-                <i class="ph ph-info text-blue-500 text-xl mt-0.5"></i>
+                <i class="ph ph-globe text-blue-500 text-xl mt-0.5"></i>
                 <p class="text-sm text-blue-600">
-                    Menu ini akan otomatis terdistribusi ke <strong>semua cabang aktif</strong>
-                    dengan stok awal 0. Admin cabang dapat mengajukan penambahan stok.
+                    Promo global berlaku di <strong>semua cabang</strong> ELCO
+                    dan dapat digunakan kasir saat transaksi.
                 </p>
             </div>
 
             {{-- Tombol --}}
             <div class="flex gap-3 pt-2">
-                <a href="{{ route('manager.menus.index') }}"
+                <a href="{{ route('manager.promotions.index') }}"
                    class="flex-1 text-center py-3 rounded-2xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 smooth-transition">
                     Batal
                 </a>
                 <button type="submit"
                     class="flex-1 py-3 rounded-2xl bg-gradient-to-r from-elco-coffee to-elco-mocha text-white text-sm font-semibold shadow-md hover:shadow-hover smooth-transition active:scale-95">
-                    <i class="ph ph-plus mr-1"></i> Simpan Menu
+                    <i class="ph ph-tag mr-1"></i> Buat Promo
                 </button>
             </div>
         </form>
@@ -121,17 +134,11 @@
 
 @push('scripts')
 <script>
-function previewImage(input) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = e => {
-            document.getElementById('previewImg').src = e.target.result;
-            document.getElementById('imagePreview').classList.remove('hidden');
-            document.getElementById('uploadPlaceholder').classList.add('hidden');
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
+function updateDiscountLabel() {
+    const type = document.getElementById('discountType').value;
+    document.getElementById('discountPrefix').textContent = type === 'percentage' ? '%' : 'Rp';
 }
+updateDiscountLabel();
 </script>
 <script>
 // Toggle field nama item berdasarkan tipe

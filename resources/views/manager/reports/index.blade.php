@@ -219,7 +219,58 @@
         </table>
     </div>
 </div>
-
+{{-- Tabel Detail Pengeluaran --}}
+<div class="bg-white rounded-3xl shadow-soft overflow-hidden mt-6">
+    <div class="p-6 border-b border-gray-100">
+        <h3 class="font-display font-semibold text-gray-800">
+            Detail Pengeluaran — {{ \DateTime::createFromFormat('!m', $month)->format('F') }} {{ $year }}
+        </h3>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left">
+            <thead>
+                <tr class="text-xs text-gray-400 border-b border-gray-100 bg-gray-50">
+                    <th class="py-3 px-6 font-medium">Judul</th>
+                    <th class="py-3 px-6 font-medium">Cabang</th>
+                    <th class="py-3 px-6 font-medium">Kategori</th>
+                    <th class="py-3 px-6 font-medium">Jumlah</th>
+                    <th class="py-3 px-6 font-medium">Diajukan Oleh</th>
+                    <th class="py-3 px-6 font-medium">Tanggal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php
+                    $expenseQuery = \App\Models\Expense::where('status', 'verified')
+                        ->whereMonth('created_at', $month)
+                        ->whereYear('created_at', $year)
+                        ->with('branch', 'createdBy');
+                    if ($branchId) $expenseQuery->where('branch_id', $branchId);
+                    $expenseList = $expenseQuery->latest()->take(20)->get();
+                @endphp
+                @forelse($expenseList as $exp)
+                <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50 smooth-transition">
+                    <td class="py-3 px-6 text-sm font-semibold text-gray-800">{{ $exp->title }}</td>
+                    <td class="py-3 px-6 text-sm text-gray-600">{{ $exp->branch?->name ?? '—' }}</td>
+                    <td class="py-3 px-6">
+                        <span class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 font-medium">
+                            {{ $exp->category_label ?? $exp->category }}
+                        </span>
+                    </td>
+                    <td class="py-3 px-6 text-sm font-bold text-red-500">
+                        Rp {{ number_format($exp->amount, 0, ',', '.') }}
+                    </td>
+                    <td class="py-3 px-6 text-sm text-gray-600">{{ $exp->createdBy?->name ?? '—' }}</td>
+                    <td class="py-3 px-6 text-xs text-gray-500">{{ $exp->created_at->format('d M Y') }}</td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="6" class="py-8 text-center text-gray-400">Belum ada pengeluaran</td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
