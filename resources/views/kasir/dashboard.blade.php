@@ -11,9 +11,32 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<<<<<<< HEAD
         <div class="bg-white p-6 rounded-3xl shadow-soft smooth-transition hover:-translate-y-1 hover:shadow-hover border border-transparent hover:border-elco-latte/30">
             <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center text-2xl mb-4">
                 <i class="ph-fill ph-coffee"></i>
+=======
+
+        <!-- MENU -->
+        <div class="bg-white p-6 rounded-3xl shadow-soft">
+
+            <div class="flex items-center gap-4">
+
+                <div class="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center">
+                    <i class="ph-fill ph-coffee text-3xl text-orange-500"></i>
+                </div>
+
+                <div>
+                    <p class="text-sm text-gray-500">
+                        Menu Tersedia
+                    </p>
+
+                    <h3 class="text-2xl font-bold text-gray-800">
+                        {{ $data['available_menus']->count() }}<span class="text-sm text-gray-400 font-normal">item</span>
+                    </h3>
+                </div>
+
+>>>>>>> ce48f978beb4686e0951918cb6f016cb63b198a2
             </div>
             <p class="text-sm text-gray-500 mb-1">Menu Tersedia</p>
             <h3 class="text-2xl font-display font-bold text-gray-800">
