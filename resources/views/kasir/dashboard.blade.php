@@ -33,7 +33,7 @@
                     </p>
 
                     <h3 class="text-2xl font-bold text-gray-800">
-                        {{ $data['available_menus']->count() }}
+                        {{ $data['available_menus']->count() }}<span class="text-sm text-gray-400 font-normal">item</span>
                     </h3>
                 </div>
 

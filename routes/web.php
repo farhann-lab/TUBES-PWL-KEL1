@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\ExpenseController as AdminExpense;
 use App\Http\Controllers\Admin\PromotionController as AdminPromo;
 use App\Http\Controllers\Admin\TransactionController as AdminTransaction;
 use App\Http\Controllers\Admin\ReportController as AdminReport;
+use App\Http\Controllers\Kasir\TransactionController as KasirTransaction;
 
 Route::get('/', function () {
     if (!auth()->check()) return view('/welcome');
@@ -46,27 +47,42 @@ Route::middleware(['auth', 'role:manager'])
     ->name('manager.')
     ->group(function () {
         Route::get('/dashboard', [ManagerDashboard::class, 'index'])->name('dashboard');
+
         Route::resource('branches', BranchController::class);
         Route::post('branches/{id}/restore', [BranchController::class, 'restore'])
              ->name('branches.restore');
-        Route::resource('menus', MenuController::class);
+        Route::post('branches/{branch}/add-kasir', [BranchController::class, 'addKasir'])
+            ->name('branches.add-kasir');
+
+        Route::resource('menus', MenuController::class)->except(['show']);
         Route::post('menus/{id}/restore', [MenuController::class, 'restore'])
              ->name('menus.restore');
+
+        Route::get('menus/ingredients', [MenuController::class, 'ingredients'])
+             ->name('menus.ingredients');
+        Route::post('menus/ingredients', [MenuController::class, 'storeIngredient'])
+             ->name('menus.ingredients.store');
+        Route::put('menus/ingredients/{ingredient}', [MenuController::class, 'updateIngredient'])
+             ->name('menus.ingredients.update');
+        // ────────────────────────────────────────────────────────────────────
+
         Route::get('stock-requests', [ManagerStockRequest::class, 'index'])->name('stock-requests.index');
         Route::get('stock-requests/{stockRequest}', [ManagerStockRequest::class, 'show'])->name('stock-requests.show');
         Route::post('stock-requests/{stockRequest}/approve', [ManagerStockRequest::class, 'approve'])->name('stock-requests.approve');
         Route::post('stock-requests/{stockRequest}/reject', [ManagerStockRequest::class, 'reject'])->name('stock-requests.reject');
+        Route::post('stock-requests/{stockRequest}/confirm-delivery', [ManagerStockRequest::class, 'confirmDelivery'])
+            ->name('stock-requests.confirm-delivery');
+
         Route::get('expenses', [ManagerExpense::class, 'index'])->name('expenses.index');
         Route::post('expenses/{expense}/verify', [ManagerExpense::class, 'verify'])->name('expenses.verify');
         Route::post('expenses/{expense}/reject', [ManagerExpense::class, 'reject'])->name('expenses.reject');
-        Route::resource('promotions', ManagerPromo::class)
-             ->except(['show']);
+
+        Route::resource('promotions', ManagerPromo::class)->except(['show']);
+        Route::post('promotions/{promotion}/approve', [ManagerPromo::class, 'approvePromo'])->name('promotions.approve');
+        Route::post('promotions/{promotion}/reject', [ManagerPromo::class, 'rejectPromo'])->name('promotions.reject');
+
         Route::get('reports', [ManagerReport::class, 'index'])->name('reports.index');
         Route::get('transactions', [ManagerTransaction::class, 'index'])->name('transactions.index');
-        Route::post('branches/{branch}/add-kasir', [BranchController::class, 'addKasir'])
-            ->name('branches.add-kasir');
-        Route::post('stock-requests/{stockRequest}/confirm-delivery', [ManagerStockRequest::class, 'confirmDelivery'])
-            ->name('stock-requests.confirm-delivery');
     });
 
 Route::middleware(['auth', 'role:admin'])
@@ -96,7 +112,13 @@ Route::middleware(['auth', 'role:kasir'])
     ->prefix('kasir')
     ->name('kasir.')
     ->group(function () {
-        Route::get('/dashboard', fn() => view('kasir.dashboard'))->name('dashboard');
+        Route::get('/dashboard', [KasirDashboard::class, 'index'])->name('dashboard');
+        Route::get('transactions', [KasirTransaction::class, 'index'])->name('transactions.index');
+        Route::post('transactions', [KasirTransaction::class, 'store'])->name('transactions.store');
+        Route::get('transactions/{transaction}', [KasirTransaction::class, 'show'])->name('transactions.show');
+        Route::post('transactions/{transaction}/complete', [KasirTransaction::class, 'complete'])
+        ->name('transactions.complete');
+        Route::get('shifts', [ShiftController::class, 'index'])->name('shifts.index');
     });
 
 Route::get('/content/manager', function () {
