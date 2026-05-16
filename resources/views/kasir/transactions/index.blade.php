@@ -22,11 +22,11 @@
             <h2 class="text-lg font-display font-bold text-gray-800">Menu Tersedia</h2>
             {{-- Filter Kategori --}}
             <div class="flex gap-2">
-                @foreach(['semua', 'minuman', 'makanan', 'snack'] as $cat)
-                <button onclick="filterMenu('{{ $cat }}')" id="cat-{{ $cat }}"
+                @foreach(['semua' => 'Semua', 'minuman' => '☕ Minuman', 'makanan_snack' => '🍱 Makanan & Snack'] as $val => $label)
+                <button onclick="filterMenu('{{ $val }}')" id="cat-{{ $val }}"
                     class="px-3 py-1.5 rounded-xl text-xs font-medium smooth-transition
-                    {{ $cat === 'semua' ? 'bg-elco-coffee text-white' : 'bg-white text-gray-500 shadow-soft' }}">
-                    {{ ucfirst($cat) }}
+                    {{ $val === 'semua' ? 'bg-elco-coffee text-white' : 'bg-white text-gray-500 shadow-soft' }}">
+                    {{ $label }}
                 </button>
                 @endforeach
             </div>
@@ -35,9 +35,13 @@
         {{-- Grid Menu --}}
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="menuGrid">
             @forelse($stocks as $stock)
+            @php
+                $isIngredientBased = $stock->menu->isIngredientBased();
+                $cartLimit = $isIngredientBased ? 999 : (int) $stock->stock;
+            @endphp
             <div class="menu-item bg-white rounded-2xl shadow-soft overflow-hidden cursor-pointer smooth-transition hover:-translate-y-1 hover:shadow-hover active:scale-95"
                  data-category="{{ $stock->menu->category }}"
-                 onclick="addToCart({{ $stock->id }}, '{{ addslashes($stock->menu->name) }}', {{ $stock->custom_price ?? $stock->menu->base_price }}, {{ $stock->stock }})">
+                 onclick="addToCart({{ $stock->id }}, '{{ addslashes($stock->menu->name) }}', {{ $stock->custom_price ?? $stock->menu->base_price }}, {{ $cartLimit }}, {{ $isIngredientBased ? 'true' : 'false' }})">
 
                 {{-- Gambar --}}
                 <div class="h-32 bg-gradient-to-br from-elco-cream to-orange-50 relative">
@@ -50,7 +54,7 @@
                         </div>
                     @endif
                     <span class="absolute bottom-2 right-2 bg-white/80 backdrop-blur-sm text-xs font-semibold text-gray-600 px-2 py-0.5 rounded-lg">
-                        Stok: {{ $stock->stock }}
+                        {{ $isIngredientBased ? 'Bahan tersedia' : 'Stok: '.$stock->stock }}
                     </span>
                 </div>
 
@@ -223,7 +227,7 @@
                     <td class="py-3 px-5">
                         <div class="flex gap-2">
                             {{-- Selesaikan --}}
-                            @if($trx->status === 'pending' && !str_starts_with($trx->cancel_reason ?? '', '[REQUEST CANCEL]'))
+                            @if($trx->status === 'completed' && !str_starts_with($trx->cancel_reason ?? '', '[REQUEST CANCEL]'))
                                 <button onclick="requestCancel({{ $trx->id }})"
                                     class="text-xs font-medium text-orange-500 bg-orange-50 px-3 py-1.5 rounded-xl hover:bg-orange-100 smooth-transition">
                                     <i class="ph ph-x-circle"></i> Minta Batal
@@ -293,9 +297,15 @@ let cart = {};
 const rupiah = n => 'Rp ' + Number(n).toLocaleString('id-ID');
 
 // ── Tambah ke Keranjang ──────────────────────────────────
-function addToCart(stockId, name, price, maxStock) {
+function addToCart(stockId, name, price, maxStock, ingredientBased = false) {
+    maxStock = parseInt(maxStock);
+    if (!ingredientBased && maxStock <= 0) {
+        elcoError('Stok Habis', `Stok ${name} kosong`);
+        return;
+    }
+
     if (cart[stockId]) {
-        if (cart[stockId].qty >= maxStock) {
+        if (!cart[stockId].ingredientBased && cart[stockId].qty >= maxStock) {
             elcoError('Stok Habis', `Stok ${name} hanya tersisa ${maxStock}`);
             return;
         }
@@ -306,7 +316,8 @@ function addToCart(stockId, name, price, maxStock) {
             name,
             price: parseFloat(price),
             qty: 1,
-            maxStock: parseInt(maxStock)
+            maxStock,
+            ingredientBased
         };
     }
     renderCart();
@@ -357,7 +368,7 @@ function changeQty(id, delta) {
     if (!cart[id]) return;
     cart[id].qty += delta;
     if (cart[id].qty <= 0) delete cart[id];
-    else if (cart[id].qty > cart[id].maxStock) cart[id].qty = cart[id].maxStock;
+    else if (!cart[id].ingredientBased && cart[id].qty > cart[id].maxStock) cart[id].qty = cart[id].maxStock;
     renderCart();
 }
 
@@ -412,22 +423,21 @@ function applyPromo(subtotalOverride) {
 
 // ── Filter Kategori ──────────────────────────────────────
 function filterMenu(category) {
-    // Update tombol aktif
     document.querySelectorAll('[id^="cat-"]').forEach(btn => {
         btn.classList.remove('bg-elco-coffee', 'text-white');
         btn.classList.add('bg-white', 'text-gray-500', 'shadow-soft');
     });
-    const activeBtn = document.getElementById('cat-' + category);
-    if (activeBtn) {
-        activeBtn.classList.add('bg-elco-coffee', 'text-white');
-        activeBtn.classList.remove('bg-white', 'text-gray-500', 'shadow-soft');
+    const btn = document.getElementById('cat-' + category);
+    if (btn) {
+        btn.classList.add('bg-elco-coffee', 'text-white');
+        btn.classList.remove('bg-white', 'text-gray-500', 'shadow-soft');
     }
-
-    // Filter item
     document.querySelectorAll('.menu-item').forEach(item => {
-        item.style.display =
-            (category === 'semua' || item.dataset.category === category)
-            ? '' : 'none';
+        const cat  = item.dataset.category;
+        const show = category === 'semua'
+            || category === cat
+            || (category === 'makanan_snack' && (cat === 'makanan' || cat === 'snack'));
+        item.style.display = show ? '' : 'none';
     });
 }
 
@@ -440,6 +450,51 @@ async function processTransaction() {
     }
 
     const { subtotal, discount } = applyPromo();
+    const total = subtotal - discount;
+    const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'cash';
+    const paymentLabels = { cash: '💵 Cash', transfer: '🏦 Transfer', qris: '📱 QRIS' };
+
+    // Buat ringkasan pesanan untuk konfirmasi
+    const itemList = Object.values(cart)
+        .map(i => `• ${i.name} x${i.qty} = Rp ${(i.price * i.qty).toLocaleString('id-ID')}`)
+        .join('\n');
+
+    const confirmed = await Swal.fire({
+        title: 'Konfirmasi Pesanan',
+        html: `
+            <div class="text-left text-sm space-y-2">
+                <div class="bg-gray-50 rounded-xl p-3 text-xs font-mono whitespace-pre-line">${itemList}</div>
+                <div class="flex justify-between pt-2 border-t">
+                    <span class="text-gray-500">Subtotal</span>
+                    <span class="font-semibold">Rp ${subtotal.toLocaleString('id-ID')}</span>
+                </div>
+                ${discount > 0 ? `<div class="flex justify-between text-emerald-600">
+                    <span>Diskon</span>
+                    <span>- Rp ${discount.toLocaleString('id-ID')}</span>
+                </div>` : ''}
+                <div class="flex justify-between text-base font-bold text-gray-800 pt-1 border-t">
+                    <span>Total</span>
+                    <span>Rp ${total.toLocaleString('id-ID')}</span>
+                </div>
+                <div class="flex justify-between text-xs text-gray-500 pt-1">
+                    <span>Metode Bayar</span>
+                    <span class="font-medium">${paymentLabels[paymentMethod]}</span>
+                </div>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Proses Sekarang',
+        cancelButtonText: 'Periksa Lagi',
+        confirmButtonColor: '#5C3D2E',
+        customClass: {
+            popup:         'swal-elco-popup',
+            confirmButton: 'swal-elco-confirm',
+            cancelButton:  'swal-elco-cancel',
+        }
+    });
+
+    if (!confirmed.isConfirmed) return;
+
     const btn = document.getElementById('processBtn');
     btn.disabled = true;
     btn.innerHTML = '<i class="ph ph-spinner animate-spin mr-2"></i> Memproses...';
@@ -449,31 +504,21 @@ async function processTransaction() {
         quantity:      cart[id].qty,
     }));
 
-    const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'cash';
-    const promotionId   = document.getElementById('promoSelect')?.value || null;
+    const promotionId = document.getElementById('promoSelect')?.value || null;
 
     try {
         const res = await fetch('{{ route("kasir.transactions.store") }}', {
             method:  'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({
-                items,
-                payment_method: paymentMethod,
-                promotion_id:   promotionId
-            }),
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({ items, payment_method: paymentMethod, promotion_id: promotionId }),
         });
-
         const data = await res.json();
 
         if (data.success) {
             document.getElementById('invoiceDisplay').textContent = data.invoice ?? '';
-            document.getElementById('totalFinal').textContent     = rupiah(subtotal - discount);
+            document.getElementById('totalFinal').textContent     = rupiah(total);
             if (data.transaction_id) {
-                document.getElementById('receiptLink').href =
-                    `/kasir/transactions/${data.transaction_id}`;
+                document.getElementById('receiptLink').href = `/kasir/transactions/${data.transaction_id}`;
             }
             document.getElementById('successModal').classList.remove('hidden');
             clearCart();
