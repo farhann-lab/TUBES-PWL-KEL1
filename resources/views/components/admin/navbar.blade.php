@@ -17,7 +17,7 @@
                     $pendingTrx     = \App\Models\Transaction::where('branch_id', auth()->user()->branch_id)
                                     ->where('status', 'pending')->latest()->take(3)->get();
                     $cancelRequests = \App\Models\Transaction::where('branch_id', auth()->user()->branch_id)
-                                    ->where('status', 'pending')
+                                    ->where('status', 'completed')
                                     ->where('cancel_reason', 'like', '[REQUEST CANCEL]%')
                                     ->latest()->take(3)->get();
                     $pendingCount   = $pendingStocks->count() + $cancelRequests->count();
@@ -43,7 +43,7 @@
                         $pendingTrx     = \App\Models\Transaction::where('branch_id', auth()->user()->branch_id)
                                         ->where('status', 'pending')->latest()->take(3)->get();
                         $cancelRequests = \App\Models\Transaction::where('branch_id', auth()->user()->branch_id)
-                                        ->where('status', 'pending')
+                                        ->where('status', 'completed')
                                         ->where('cancel_reason', 'like', '[REQUEST CANCEL]%')
                                         ->latest()->take(3)->get();
                         $pendingCount   = $pendingStocks->count() + $cancelRequests->count();
@@ -101,14 +101,38 @@
             </div>
         </div>
 
-        {{-- User Info --}}
-        <div class="flex items-center gap-3 pl-4 border-l border-gray-200">
-            <div class="w-11 h-11 rounded-full bg-gradient-to-br from-elco-coffee to-elco-mocha flex items-center justify-center text-white font-bold shadow-sm">
-                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+        {{-- Profile Dropdown --}}
+        <div class="relative" id="profileWrapper">
+            <div class="flex items-center gap-3 pl-4 border-l border-gray-200 cursor-pointer group"
+                onclick="toggleProfile()">
+                <div class="w-11 h-11 rounded-full bg-gradient-to-br from-elco-coffee to-elco-mocha flex items-center justify-center text-white font-bold shadow-sm">
+                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                </div>
+                <div class="hidden md:block text-right">
+                    <p class="text-sm font-semibold text-gray-800">{{ auth()->user()->name }}</p>
+                    <p class="text-xs text-gray-500">Admin Cabang</p>
+                </div>
+                <i class="ph ph-caret-down text-gray-400"></i>
             </div>
-            <div class="hidden md:block">
-                <p class="text-sm font-semibold text-gray-800">{{ auth()->user()->name }}</p>
-                <p class="text-xs text-gray-500">Admin Cabang</p>
+            <div id="profileDropdown"
+                class="hidden absolute right-0 top-14 w-52 bg-white rounded-2xl shadow-hover z-50 overflow-hidden border border-gray-100 py-1">
+                <div class="px-4 py-3 border-b border-gray-100">
+                    <p class="text-sm font-semibold text-gray-800">{{ auth()->user()->name }}</p>
+                    <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
+                </div>
+                <a href="{{ route('profile.edit') }}"
+                class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 smooth-transition">
+                    <i class="ph ph-user-circle text-gray-400"></i> Edit Profil
+                </a>
+                <div class="border-t border-gray-100 mt-1">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                            class="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 smooth-transition">
+                            <i class="ph ph-sign-out"></i> Keluar
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -119,12 +143,23 @@
 function toggleNotif() {
     const dd = document.getElementById('notifDropdown');
     dd.classList.toggle('hidden');
+    document.getElementById('profileDropdown')?.classList.add('hidden');
+}
+
+function toggleProfile() {
+    const dd = document.getElementById('profileDropdown');
+    dd.classList.toggle('hidden');
+    document.getElementById('notifDropdown')?.classList.add('hidden');
 }
 // Tutup jika klik di luar
 document.addEventListener('click', function(e) {
-    const wrapper = document.getElementById('notifWrapper');
-    if (wrapper && !wrapper.contains(e.target)) {
+    const notifWrapper = document.getElementById('notifWrapper');
+    const profileWrapper = document.getElementById('profileWrapper');
+    if (notifWrapper && !notifWrapper.contains(e.target)) {
         document.getElementById('notifDropdown')?.classList.add('hidden');
+    }
+    if (profileWrapper && !profileWrapper.contains(e.target)) {
+        document.getElementById('profileDropdown')?.classList.add('hidden');
     }
 });
 </script>
