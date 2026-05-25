@@ -12,17 +12,16 @@ class PromotionController extends Controller
     {
         $branchId = auth()->user()->branch_id;
 
-        // Promo cabang sendiri + promo global
-        $branchPromos  = Promotion::where('branch_id', $branchId)
-                                  ->with('createdBy')
-                                  ->latest()->get();
+        $branchPromos = Promotion::where('branch_id', $branchId)
+                                ->with('createdBy')
+                                ->latest()->get();
 
-        $globalPromos  = Promotion::where('type', 'global')
-                                  ->where('is_active', true)
-                                  ->latest()->get();
+        $globalPromos = Promotion::where('type', 'global')
+                                ->where('is_active', true)
+                                ->where('review_status', 'approved')
+                                ->latest()->get();
 
-        return view('admin.promotions.index',
-            compact('branchPromos', 'globalPromos'));
+        return view('admin.promotions.index', compact('branchPromos', 'globalPromos'));
     }
 
     public function create()
@@ -42,10 +41,9 @@ class PromotionController extends Controller
             'end_date'       => 'required|date|after_or_equal:start_date',
         ]);
 
-        // Validasi: diskon persen max 100
         if ($request->discount_type === 'percentage' && $request->discount_value > 100) {
             return back()->withErrors(['discount_value' => 'Diskon persentase tidak boleh lebih dari 100%'])
-                         ->withInput();
+                        ->withInput();
         }
 
         Promotion::create([
@@ -59,11 +57,12 @@ class PromotionController extends Controller
             'min_purchase'   => $request->min_purchase ?? 0,
             'start_date'     => $request->start_date,
             'end_date'       => $request->end_date,
-            'is_active'      => true,
+            'is_active'      => false,        // ← nonaktif dulu
+            'review_status'  => 'pending',    // ← menunggu review
         ]);
 
         return redirect()->route('admin.promotions.index')
-                         ->with('success', 'Promo cabang berhasil dibuat!');
+                        ->with('success', 'Promo dikirim ke Manager Pusat untuk ditinjau!');
     }
 
     public function destroy(Promotion $promotion)

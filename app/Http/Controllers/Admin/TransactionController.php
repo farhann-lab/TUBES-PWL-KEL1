@@ -33,34 +33,79 @@ class TransactionController extends Controller
             compact('transactions', 'summary', 'month', 'year'));
     }
 
-    // Batalkan transaksi — hanya jika masih pending
+    /**
+     * Batalkan transaksi — disetujui oleh Admin Cabang.
+     *
+     * Logika pengembalian stok:
+     *  - Minuman (bahan_baku)   → kembalikan bahan baku ke ingredient_stocks
+     *  - Makanan/snack (qty)    → kembalikan pcs ke branch_stocks
+     */
     public function cancel(Request $request, Transaction $transaction)
     {
         $request->validate([
             'cancel_reason' => 'required|string|min:5',
         ]);
 
-        if ($transaction->status !== 'pending') {
-            return back()->with('error',
-                'Transaksi tidak dapat dibatalkan karena sudah ' . $transaction->status . '!');
+        if ($transaction->branch_id !== auth()->user()->branch_id) {
+            abort(403);
+        }
+
+        $canCancel = $transaction->status === 'pending' ||
+            ($transaction->status === 'completed' &&
+             str_starts_with($transaction->cancel_reason ?? '', '[REQUEST CANCEL]'));
+
+        if (!$canCancel) {
+            return back()->with('error', 'Transaksi tidak dapat dibatalkan!');
         }
 
         DB::transaction(function () use ($request, $transaction) {
-            // Kembalikan stok
             foreach ($transaction->items as $item) {
-                BranchStock::where('branch_id', $transaction->branch_id)
-                           ->where('menu_id', $item->menu_id)
-                           ->increment('stock', $item->quantity);
+                // Muat menu beserta resepnya
+                $menu = $item->menu()->with('ingredients.ingredient')->first();
+
+                if (!$menu) {
+                    continue;
+                }
+
+                if ($menu->isQuantityBased()) {
+                    // Makanan / snack: kembalikan stok pcs
+                    BranchStock::where('branch_id', $transaction->branch_id)
+                        ->where('menu_id', $item->menu_id)
+                        ->increment('stock', $item->quantity);
+                } else {
+                    // Minuman: kembalikan bahan baku
+                    $menu->restoreIngredients($transaction->branch_id, $item->quantity);
+                }
             }
 
             $transaction->update([
-                'status'        => 'cancelled',
+                'status'       => 'cancelled',
                 'cancel_reason' => $request->cancel_reason,
-                'cancelled_by'  => auth()->id(),
-                'cancelled_at'  => now(),
+                'cancelled_by' => auth()->id(),
+                'cancelled_at' => now(),
             ]);
         });
 
-        return back()->with('success', 'Transaksi berhasil dibatalkan & stok dikembalikan!');
+        return back()->with('success', 'Transaksi berhasil dibatalkan dan stok dikembalikan!');
+    }
+
+    public function rejectCancel(Transaction $transaction)
+    {
+        if ($transaction->branch_id !== auth()->user()->branch_id) {
+            abort(403);
+        }
+
+        $isRequestCancel = $transaction->status === 'completed' &&
+            str_starts_with($transaction->cancel_reason ?? '', '[REQUEST CANCEL]');
+
+        if (!$isRequestCancel) {
+            return back()->with('error', 'Permintaan pembatalan tidak ditemukan!');
+        }
+
+        $transaction->update([
+            'cancel_reason' => null,
+        ]);
+
+        return back()->with('success', 'Permintaan pembatalan ditolak. Transaksi tetap selesai.');
     }
 }
