@@ -1,311 +1,275 @@
 @extends('layouts.kasir')
 
 @section('content')
+@if(session('success'))
+    <div class="mb-6 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-700">
+        <i class="ph-fill ph-check-circle text-xl"></i>
+        {{ session('success') }}
+    </div>
+@endif
 
-<div class="space-y-6">
+@if(session('error'))
+    <div class="mb-6 flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-red-700">
+        <i class="ph-fill ph-x-circle text-xl"></i>
+        {{ session('error') }}
+    </div>
+@endif
 
-    <!-- HEADER -->
-    <div class="flex items-center justify-between">
-
-        <h2 class="text-lg font-display font-semibold text-gray-800">
-            Ringkasan Hari Ini
-            <span class="text-gray-400 text-sm font-normal">
-                / {{ now()->format('d M Y') }}
-            </span>
-        </h2>
-
+<div class="mx-auto max-w-2xl space-y-6">
+    <div>
+        <h2 class="font-display text-xl font-bold text-gray-800">Shift Kasir</h2>
+        <p class="mt-1 text-sm text-gray-500">{{ now()->translatedFormat('l, j F Y') }}</p>
     </div>
 
-    <!-- STAT -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {{-- Status Shift Aktif --}}
+    @if($activeShift)
+        <div class="rounded-3xl bg-white p-6 shadow-soft">
+            <div class="mb-6 flex items-center gap-4">
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-3xl text-emerald-500">
+                    <i class="ph-fill ph-clock"></i>
+                </div>
 
-        <!-- MENU -->
-        <div class="bg-white p-6 rounded-3xl shadow-soft">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-emerald-600">Shift Aktif</p>
+                    <h3 class="font-display text-xl font-bold text-gray-800">{{ $activeShift->shift_label }}</h3>
+                </div>
 
-            <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center text-2xl mb-4">
-                <i class="ph-fill ph-coffee"></i>
-            </div>
-
-            <p class="text-sm text-gray-500 mb-1">
-                Menu Tersedia
-            </p>
-
-            <h3 class="text-2xl font-display font-bold text-gray-800">
-                {{ $data['available_menus']->count() }}
-                <span class="text-sm text-gray-400 font-normal">
-                    item
+                <span class="ml-auto rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700 animate-pulse">
+                    ● AKTIF
                 </span>
-            </h3>
-
-        </div>
-
-        <!-- TRANSAKSI -->
-        <div class="bg-white p-6 rounded-3xl shadow-soft">
-
-            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl mb-4">
-                <i class="ph-fill ph-receipt"></i>
             </div>
 
-            <p class="text-sm text-gray-500 mb-1">
-                Transaksi Hari Ini
-            </p>
+            <div class="mb-6 grid grid-cols-2 gap-4">
+                <div class="rounded-2xl bg-gray-50 p-4">
+                    <p class="mb-1 text-xs text-gray-500">Clock In</p>
+                    <p class="text-lg font-bold text-gray-800">{{ $activeShift->clock_in }}</p>
+                </div>
 
-            <h3 class="text-2xl font-display font-bold text-gray-800">
-                {{ $data['today_transactions'] }}
-
-                <span class="text-sm text-gray-400 font-normal">
-                    struk
-                </span>
-
-            </h3>
-
-        </div>
-
-        <!-- PENJUALAN -->
-        <div class="bg-white p-6 rounded-3xl shadow-soft">
-
-            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center text-2xl mb-4">
-                <i class="ph-fill ph-wallet"></i>
+                <div class="rounded-2xl bg-gray-50 p-4">
+                    <p class="mb-1 text-xs text-gray-500">Sisa Waktu Shift</p>
+                    <p class="text-lg font-bold text-elco-coffee" id="duration">—</p>
+                </div>
             </div>
 
-            <p class="text-sm text-gray-500 mb-1">
-                Total Penjualan
-            </p>
+            <form id="clockOutForm" action="{{ route('kasir.shifts.clock-out', $activeShift) }}" method="POST">
+                @csrf
+                <button
+                    type="button"
+                    onclick="elcoConfirm({
+                        title: 'Selesaikan Shift?',
+                        text: 'Pastikan semua transaksi sudah diselesaikan.',
+                        confirmText: 'Ya, Selesai',
+                        confirmColor: '#5C3D2E',
+                        icon: 'question',
+                        onConfirm: () => document.getElementById('clockOutForm').submit()
+                    })"
+                    class="w-full rounded-2xl bg-gradient-to-r from-elco-coffee to-elco-mocha py-3 text-sm font-semibold text-white shadow-md smooth-transition hover:shadow-hover active:scale-95"
+                >
+                    <i class="ph ph-sign-out mr-2"></i>
+                    Selesaikan Shift
+                </button>
+            </form>
+        </div>
+    @else
+        {{-- Form Mulai Shift --}}
+        <div class="rounded-3xl bg-white p-6 shadow-soft">
+            <h3 class="mb-5 font-display font-semibold text-gray-800">Mulai Shift Hari Ini</h3>
 
-            <h3 class="text-xl font-display font-bold text-gray-800">
-                Rp {{ number_format($data['today_total'], 0, ',', '.') }}
-            </h3>
+            <form action="{{ route('kasir.shifts.clock-in') }}" method="POST" class="space-y-5">
+                @csrf
 
+                <div>
+                    <label class="mb-3 block text-sm font-semibold text-gray-700">Pilih Shift</label>
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                        @foreach(['pagi' => ['ph-sun-horizon', 'Pagi', '07.00 - 15.00'], 'siang' => ['ph-sun', 'Siang', '15.00 - 22.00'], 'malam' => ['ph-moon', 'Malam', '22.00 - 07.00']] as $val => $info)
+                            <label class="cursor-pointer">
+                                <input type="radio" name="shift" value="{{ $val }}" class="sr-only peer">
+                                <div class="rounded-2xl border-2 border-gray-200 p-4 text-center smooth-transition peer-checked:border-elco-coffee peer-checked:bg-elco-cream">
+                                    <i class="ph {{ $info[0] }} mb-1 block text-2xl text-elco-coffee"></i>
+                                    <p class="text-sm font-semibold text-gray-700">{{ $info[1] }}</p>
+                                    <p class="mt-0.5 text-xs text-gray-400">{{ $info[2] }}</p>
+                                </div>
+                            </label>
+                        @endforeach
+                    </div>
+
+                    @error('shift')
+                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <button
+                    type="submit"
+                    class="w-full rounded-2xl bg-gradient-to-r from-elco-coffee to-elco-mocha py-3 text-sm font-semibold text-white shadow-md smooth-transition hover:shadow-hover active:scale-95"
+                >
+                    <i class="ph ph-play-circle mr-2"></i>
+                    Mulai Shift
+                </button>
+            </form>
+        </div>
+    @endif
+
+    {{-- Riwayat Shift --}}
+    <div class="overflow-hidden rounded-3xl bg-white shadow-soft">
+        <div class="border-b border-gray-100 p-5">
+            <h3 class="font-display font-semibold text-gray-800">Riwayat Shift</h3>
         </div>
 
+        <div class="divide-y divide-gray-50">
+            @forelse($shiftHistory as $shift)
+                <div class="flex items-center justify-between gap-4 p-4 hover:bg-gray-50 smooth-transition">
+                    <div class="flex min-w-0 items-center gap-3">
+                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl {{ $shift->status === 'active' ? 'bg-emerald-50 text-emerald-500' : 'bg-gray-100 text-gray-400' }}">
+                            <i class="ph-fill ph-clock"></i>
+                        </div>
+
+                        <div class="min-w-0">
+                            <p class="truncate text-sm font-semibold text-gray-800">{{ $shift->shift_label }}</p>
+                            <p class="text-xs text-gray-500">{{ $shift->shift_date->format('d M Y') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex-shrink-0 text-right">
+                        <p class="text-xs text-gray-500">{{ $shift->clock_in }} — {{ $shift->clock_out ?? 'Aktif' }}</p>
+                        <span class="rounded-full px-2 py-0.5 text-xs font-medium {{ $shift->status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500' }}">
+                            {{ $shift->status === 'active' ? 'Aktif' : 'Selesai' }}
+                        </span>
+                    </div>
+                </div>
+            @empty
+                <div class="py-8 text-center text-sm text-gray-400">Belum ada riwayat shift</div>
+            @endforelse
+        </div>
     </div>
 
-    <!-- POS -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        <!-- MENU -->
-        <div class="lg:col-span-2 bg-white p-6 rounded-3xl shadow-soft">
-
-            <div class="flex justify-between items-center mb-5">
-
-                <h2 class="text-lg font-semibold text-gray-800">
-                    Menu Café
-                </h2>
-
+    {{-- Jadwal Shift Saya --}}
+    @if($mySchedules->count() > 0)
+        <div class="overflow-hidden rounded-3xl bg-white shadow-soft">
+            <div class="border-b border-gray-100 p-5">
+                <h3 class="font-display font-semibold text-gray-800">Jadwal Shift Saya</h3>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="divide-y divide-gray-50">
+                @foreach($mySchedules as $schedule)
+                    <div class="flex items-center justify-between gap-4 p-4 hover:bg-gray-50 smooth-transition">
+                        <div class="flex min-w-0 items-center gap-3">
+                            <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl text-2xl
+                                {{ $schedule->shift === 'pagi' ? 'bg-yellow-50' : '' }}
+                                {{ $schedule->shift === 'siang' ? 'bg-orange-50' : '' }}
+                                {{ $schedule->shift === 'malam' ? 'bg-blue-50' : '' }}">
+                                <i class="ph {{ $schedule->shift === 'pagi' ? 'ph-sunrise' : ($schedule->shift === 'siang' ? 'ph-sun' : 'ph-moon') }} text-elco-coffee"></i>
+                            </div>
 
-                @forelse($data['available_menus'] as $item)
+                            <div class="min-w-0">
+                                <p class="text-sm font-semibold text-gray-800">
+                                    {{ ucfirst($schedule->shift) }}
+                                    @if($schedule->shift_date->isToday())
+                                        <span class="ml-1 rounded-full bg-elco-coffee px-2 py-0.5 text-xs text-white">Hari Ini</span>
+                                    @endif
+                                </p>
+                                <p class="text-xs text-gray-500">{{ $schedule->shift_date->translatedFormat('l, d M Y') }}</p>
+                                <p class="text-xs text-gray-400">
+                                    {{ substr($schedule->start_time, 0, 5) }} – {{ substr($schedule->end_time, 0, 5) }}
+                                </p>
+                            </div>
+                        </div>
 
-                <div class="p-4 rounded-2xl border border-gray-100 hover:shadow-soft transition">
-
-                    <h3 class="font-semibold text-gray-800">
-                        {{ $item->menu->name }}
-                    </h3>
-
-                    <p class="text-xs text-gray-500 mt-1">
-                        Stock: {{ $item->stock }}
-                    </p>
-
-                    <p class="text-sm font-bold text-elco-coffee mt-2">
-                        Rp {{ number_format($item->effective_price, 0, ',', '.') }}
-                    </p>
-
-                    <button
-                        class="mt-4 w-full bg-elco-coffee text-white py-2 rounded-xl hover:opacity-90">
-
-                        Tambah
-
-                    </button>
-
-                </div>
-
-                @empty
-
-                <div class="col-span-3 text-center py-10 text-gray-400">
-
-                    Tidak ada menu tersedia
-
-                </div>
-
-                @endforelse
-
+                        <div class="flex-shrink-0 text-right">
+                            @if($schedule->is_active_now)
+                                <span class="mb-1 block rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 animate-pulse">
+                                    ● Sedang Berlangsung
+                                </span>
+                            @elseif($schedule->shift_date->isFuture() || ($schedule->shift_date->isToday() && now()->format('H:i:s') < $schedule->start_time))
+                                <p class="mb-1 text-xs text-gray-500">Mulai dalam</p>
+                                <p
+                                    class="countdown-timer text-sm font-bold text-elco-coffee"
+                                    data-start="{{ $schedule->shift_date->format('Y-m-d') }} {{ $schedule->start_time }}"
+                                    data-end="{{ $schedule->shift_date->format('Y-m-d') }} {{ $schedule->end_time }}"
+                                >
+                                    —
+                                </p>
+                            @else
+                                <span class="text-xs text-gray-400">Selesai</span>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
             </div>
-
         </div>
-
-        <!-- CHECKOUT -->
-        <div class="bg-white p-6 rounded-3xl shadow-soft">
-
-            <h2 class="text-lg font-semibold text-gray-800 mb-5">
-                Checkout
-            </h2>
-
-            <!-- TOTAL -->
-            <div class="border-t border-dashed pt-4 mb-5">
-
-                <div class="flex justify-between text-lg font-bold text-elco-coffee">
-
-                    <span>Total</span>
-
-                    <span id="total-price">
-                        Rp 50.000
-                    </span>
-
-                </div>
-
-            </div>
-
-            <!-- PAYMENT -->
-            <div class="mb-5">
-
-                <label class="text-sm font-medium text-gray-700 block mb-3">
-                    Metode Pembayaran
-                </label>
-
-                <select
-                    id="payment_method"
-                    class="w-full border border-gray-200 rounded-2xl px-4 py-3">
-
-                    <option value="cash">
-                        Cash
-                    </option>
-
-                    <option value="qris">
-                        QRIS
-                    </option>
-
-                </select>
-
-            </div>
-
-            <!-- CASH -->
-            <div id="cash-area" class="mb-5">
-
-                <label class="text-sm font-medium text-gray-700 block mb-2">
-                    Uang Bayar
-                </label>
-
-                <input
-                    type="number"
-                    id="paid_amount"
-                    class="w-full border border-gray-200 rounded-2xl px-4 py-3"
-                    placeholder="Masukkan nominal">
-
-            </div>
-
-            <!-- QRIS -->
-            <div id="qris-area" style="display:none;" class="mb-5">
-
-                <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-center">
-
-                    <img
-                        src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=ELCO-KASIR"
-                        class="mx-auto rounded-xl mb-3">
-
-                    <p class="text-sm text-gray-500">
-                        Scan QR untuk pembayaran
-                    </p>
-
-                </div>
-
-            </div>
-
-            <!-- KEMBALIAN -->
-            <div class="flex justify-between mb-6">
-
-                <span class="text-gray-500">
-                    Kembalian
-                </span>
-
-                <span
-                    id="change_text"
-                    class="font-bold text-emerald-600">
-
-                    Rp 0
-
-                </span>
-
-            </div>
-
-            <!-- BUTTON -->
-            <button
-                class="w-full bg-elco-coffee text-white py-3 rounded-2xl font-semibold hover:opacity-90">
-
-                Proses Pembayaran
-
-            </button>
-
-        </div>
-
-    </div>
-
+    @endif
 </div>
+@endsection
 
+@push('scripts')
 <script>
+@if($activeShift)
+const shiftEndTimes = {
+    pagi:  '15:00:00',
+    siang: '22:00:00',
+    malam: '07:00:00',
+};
 
-document.addEventListener('DOMContentLoaded', function () {
+const shiftType  = @js($activeShift->shift);
+const endTimeStr = shiftEndTimes[shiftType];
+const [eh, em, es] = endTimeStr.split(':').map(Number);
 
-    const paymentMethod =
-        document.getElementById('payment_method');
+function getShiftEnd() {
+    const end = new Date();
+    end.setHours(eh, em, es, 0);
 
-    const cashArea =
-        document.getElementById('cash-area');
-
-    const qrisArea =
-        document.getElementById('qris-area');
-
-    function updatePayment() {
-
-        if (paymentMethod.value === 'cash') {
-
-        cashArea.style.display = 'block';
-        qrisArea.style.display = 'none';
-
+    if (shiftType === 'malam' && new Date().getHours() >= 12) {
+        end.setDate(end.getDate() + 1);
     }
 
-        if (paymentMethod.value === 'qris') {
+    return end;
+}
 
-        cashArea.style.display = 'none';
-        qrisArea.style.display = 'block';
+function updateDuration() {
+    const durationEl = document.getElementById('duration');
+    if (!durationEl) return;
 
+    const now  = new Date();
+    const end  = getShiftEnd();
+    const diff = Math.max(0, Math.floor((end - now) / 1000));
+
+    if (diff <= 0) {
+        durationEl.textContent = 'Shift Selesai';
+        return;
     }
-    }
 
-    paymentMethod.addEventListener('change', updatePayment);
+    const hrs  = Math.floor(diff / 3600);
+    const mins = Math.floor((diff % 3600) / 60);
+    const secs = diff % 60;
 
-    updatePayment();
+    durationEl.textContent = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
 
-    const total = 50000;
+setInterval(updateDuration, 1000);
+updateDuration();
+@endif
 
-    const paidInput =
-        document.getElementById('paid_amount');
+function updateScheduleCountdowns() {
+    document.querySelectorAll('.countdown-timer').forEach(timer => {
+        const start = new Date(timer.dataset.start.replace(' ', 'T'));
+        const now   = new Date();
+        const diff  = Math.max(0, Math.floor((start - now) / 1000));
 
-    const changeText =
-        document.getElementById('change_text');
-
-    paidInput.addEventListener('input', () => {
-
-        let paid =
-            parseInt(paidInput.value) || 0;
-
-        let change =
-            paid - total;
-
-        if (change < 0) {
-
-            change = 0;
-
+        if (diff <= 0) {
+            timer.textContent = 'Mulai sekarang';
+            return;
         }
 
-        changeText.innerHTML =
-            'Rp ' + change.toLocaleString('id-ID');
+        const days = Math.floor(diff / 86400);
+        const hrs  = Math.floor((diff % 86400) / 3600);
+        const mins = Math.floor((diff % 3600) / 60);
 
+        timer.textContent = days > 0
+            ? `${days} hari ${hrs} jam`
+            : `${String(hrs).padStart(2, '0')}j ${String(mins).padStart(2, '0')}m`;
     });
+}
 
-});
-
+setInterval(updateScheduleCountdowns, 60000);
+updateScheduleCountdowns();
 </script>
-
-@endsection
+@endpush

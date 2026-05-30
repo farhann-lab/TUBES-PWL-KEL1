@@ -53,66 +53,12 @@
             </div>
         </div>
 
-        <!-- Aktivitas Cabang dari Database -->
-        <div class="bg-white p-6 rounded-3xl shadow-soft mb-8">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-lg font-display font-semibold text-gray-800">Aktivitas Cabang Hari Ini</h2>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="text-xs text-gray-400 border-b border-gray-100">
-                            <th class="pb-3 font-medium px-4">Nama Cabang</th>
-                            <th class="pb-3 font-medium px-4">Alamat</th>
-                            <th class="pb-3 font-medium px-4">Transaksi</th>
-                            <th class="pb-3 font-medium px-4">Omset Hari Ini</th>
-                            <th class="pb-3 font-medium px-4">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($data['branch_activities'] as $branch)
-                        <tr class="group hover:bg-gray-50 smooth-transition border-b border-gray-50 last:border-0">
-                            <td class="py-4 px-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-xl bg-orange-50 text-orange-400 flex items-center justify-center">
-                                        <i class="ph-fill ph-storefront text-sm"></i>
-                                    </div>
-                                    <p class="text-sm font-semibold text-gray-800">{{ $branch['name'] }}</p>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4 text-sm text-gray-500 max-w-xs truncate">
-                                {{ $branch['address'] }}
-                            </td>
-                            <td class="py-4 px-4 text-sm text-gray-600">
-                                {{ $branch['trx'] }} transaksi
-                            </td>
-                            <td class="py-4 px-4">
-                                <span class="text-sm font-semibold text-emerald-600">
-                                    Rp {{ number_format($branch['income'], 0, ',', '.') }}
-                                </span>
-                            </td>
-                            <td class="py-4 px-4">
-                                <a href="{{ route('manager.reports.index') }}?branch_id={{ $branch['id'] }}"
-                                   class="text-xs font-medium text-elco-coffee bg-elco-cream px-4 py-2 rounded-xl hover:bg-elco-latte/30 smooth-transition">
-                                    Lihat Detail
-                                </a>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="5" class="py-8 text-center text-gray-400 text-sm">
-                                Belum ada cabang aktif
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        
     </div>
+    
 
     <!-- RIGHT COLUMN -->
-    <div class="space-y-6">
+    <div class="space-y-6 mt-12">
 
         <!-- Request Update Stok (ganti Performa Cabang) -->
         <div class="bg-white p-6 rounded-3xl shadow-soft">
@@ -211,7 +157,64 @@
         </div>
     </div>
 </div>
-
+<div class="xl col-span 1 space-y-6 mt-6">
+        <!-- Aktivitas Cabang dari Database -->
+        <div class="bg-white p-6 rounded-3xl shadow-soft mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-display font-semibold text-gray-800">Aktivitas Cabang Hari Ini</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="text-xs text-gray-400 border-b border-gray-100">
+                            <th class="pb-3 font-medium px-4">Nama Cabang</th>
+                            <th class="pb-3 font-medium px-4">Alamat</th>
+                            <th class="pb-3 font-medium px-4">Transaksi</th>
+                            <th class="pb-3 font-medium px-4">Omset Hari Ini</th>
+                            <th class="pb-3 font-medium px-4">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($data['branch_activities'] as $branch)
+                        <tr class="group hover:bg-gray-50 smooth-transition border-b border-gray-50 last:border-0">
+                            <td class="py-4 px-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-xl bg-orange-50 text-orange-400 flex items-center justify-center">
+                                        <i class="ph-fill ph-storefront text-sm"></i>
+                                    </div>
+                                    <p class="text-sm font-semibold text-gray-800">{{ $branch['name'] }}</p>
+                                </div>
+                            </td>
+                            <td class="py-4 px-4 text-sm text-gray-500 max-w-xs truncate">
+                                {{ $branch['address'] }}
+                            </td>
+                            <td class="py-4 px-4 text-sm text-gray-600">
+                                {{ $branch['trx'] }} transaksi
+                            </td>
+                            <td class="py-4 px-4">
+                                <span class="text-sm font-semibold text-emerald-600">
+                                    Rp {{ number_format($branch['income'], 0, ',', '.') }}
+                                </span>
+                            </td>
+                            <td class="py-4 px-4">
+                                <a href="{{ route('manager.reports.index') }}?branch_id={{ $branch['id'] }}"
+                                   class="text-xs font-medium text-elco-coffee bg-elco-cream px-4 py-2 rounded-xl hover:bg-elco-latte/30 smooth-transition">
+                                    Lihat Detail
+                                </a>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="py-8 text-center text-gray-400 text-sm">
+                                Belum ada cabang aktif
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 {{-- Modal Reject --}}
 <div id="rejectModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
     <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md mx-4">

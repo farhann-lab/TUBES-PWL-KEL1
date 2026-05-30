@@ -31,7 +31,7 @@ class AuthenticatedSessionController extends Controller
         return match(auth()->user()->role) {
             'manager' => redirect()->intended('/manager/dashboard'),
             'admin'   => redirect()->intended('/admin/dashboard'),
-            'kasir'   => redirect()->intended('/kasir/dashboard'),
+            'kasir'   => redirect()->intended('/kasir/transactions'), // ← ganti dari dashboard
             default   => redirect('/'),
         };
     }
@@ -47,6 +47,10 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/')->withHeaders([
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ]);
     }
 }

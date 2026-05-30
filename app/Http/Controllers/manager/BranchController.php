@@ -28,13 +28,19 @@ class BranchController extends Controller
             'address'        => 'required|string',
             'phone'          => 'nullable|string|max:20',
             'status'         => 'required|in:active,inactive',
-            // Data admin cabang
+            // ✅ Tambah regex @elco.com
             'admin_name'     => 'required|string|max:100',
-            'admin_email'    => 'required|email|unique:users,email',
+            'admin_email'    => [
+                'required',
+                'email',
+                'unique:users,email',
+                'regex:/^[a-zA-Z0-9._%+\-]+@elco\.com$/',
+            ],
             'admin_password' => 'required|string|min:8',
+        ], [
+            'admin_email.regex' => 'Email admin harus menggunakan domain @elco.com.',
         ]);
 
-        // 1. Buat cabang
         $branch = Branch::create([
             'name'    => $request->name,
             'address' => $request->address,
@@ -42,7 +48,6 @@ class BranchController extends Controller
             'status'  => $request->status,
         ]);
 
-        // 2. Buat akun admin cabang otomatis
         User::create([
             'name'      => $request->admin_name,
             'email'     => $request->admin_email,
@@ -91,13 +96,20 @@ class BranchController extends Controller
                          ->with('success', 'Cabang berhasil dipulihkan!');
     }
 
-    // Tambah kasir untuk cabang
     public function addKasir(Request $request, Branch $branch)
     {
         $request->validate([
             'kasir_name'     => 'required|string|max:100',
-            'kasir_email'    => 'required|email|unique:users,email',
+            // ✅ Tambah regex @elco.com
+            'kasir_email'    => [
+                'required',
+                'email',
+                'unique:users,email',
+                'regex:/^[a-zA-Z0-9._%+\-]+@elco\.com$/',
+            ],
             'kasir_password' => 'required|string|min:8',
+        ], [
+            'kasir_email.regex' => 'Email kasir harus menggunakan domain @elco.com.',
         ]);
 
         User::create([
