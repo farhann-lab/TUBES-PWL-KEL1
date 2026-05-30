@@ -12,7 +12,7 @@ class BranchController extends Controller
 {
     public function index()
     {
-        $branches = Branch::with('users')->latest()->get();
+        $branches = Branch::withTrashed()->with('users')->latest()->get();
         return view('manager.branches.index', compact('branches'));
     }
 
@@ -28,16 +28,19 @@ class BranchController extends Controller
             'address'        => 'required|string',
             'phone'          => 'nullable|string|max:20',
             'status'         => 'required|in:active,inactive',
-            // Data admin cabang
+            // ✅ Tambah regex @elco.com
             'admin_name'     => 'required|string|max:100',
-            'admin_email'    => 'required|email|unique:users,email',
+            'admin_email'    => [
+                'required',
+                'email',
+                'unique:users,email',
+                'regex:/^[a-zA-Z0-9._%+\-]+@elco\.com$/',
+            ],
             'admin_password' => 'required|string|min:8',
-            'kasir_name'     => 'nullable|string|max:100|required_with:kasir_email,kasir_password',
-            'kasir_email'    => 'nullable|email|unique:users,email|required_with:kasir_name,kasir_password',
-            'kasir_password' => 'nullable|string|min:8|required_with:kasir_name,kasir_email',
+        ], [
+            'admin_email.regex' => 'Email admin harus menggunakan domain @elco.com.',
         ]);
 
-        // 1. Buat cabang
         $branch = Branch::create([
             'name'    => $request->name,
             'address' => $request->address,
@@ -45,7 +48,6 @@ class BranchController extends Controller
             'status'  => $request->status,
         ]);
 
-        // 2. Buat akun admin cabang otomatis
         User::create([
             'name'      => $request->admin_name,
             'email'     => $request->admin_email,
@@ -54,22 +56,8 @@ class BranchController extends Controller
             'branch_id' => $branch->id,
         ]);
 
-        $message = "Cabang {$branch->name} dan akun admin berhasil dibuat!";
-
-        if ($request->filled('kasir_email')) {
-            User::create([
-                'name'      => $request->kasir_name,
-                'email'     => $request->kasir_email,
-                'password'  => Hash::make($request->kasir_password),
-                'role'      => 'kasir',
-                'branch_id' => $branch->id,
-            ]);
-
-            $message = "Cabang {$branch->name}, akun admin, dan akun kasir berhasil dibuat!";
-        }
-
         return redirect()->route('manager.branches.index')
-                         ->with('success', $message);
+                         ->with('success', "Cabang {$branch->name} dan akun admin berhasil dibuat!");
     }
 
     public function edit(Branch $branch)
@@ -96,18 +84,32 @@ class BranchController extends Controller
 
     public function destroy(Branch $branch)
     {
-        $branch->forceDelete();
+        $branch->delete();
         return redirect()->route('manager.branches.index')
-                        ->with('success', 'Cabang berhasil dihapus permanen!');
+                         ->with('success', 'Cabang berhasil dinonaktifkan!');
     }
 
-    // Tambah kasir untuk cabang
+    public function restore($id)
+    {
+        Branch::withTrashed()->findOrFail($id)->restore();
+        return redirect()->route('manager.branches.index')
+                         ->with('success', 'Cabang berhasil dipulihkan!');
+    }
+
     public function addKasir(Request $request, Branch $branch)
     {
         $request->validate([
             'kasir_name'     => 'required|string|max:100',
-            'kasir_email'    => 'required|email|unique:users,email',
+            // ✅ Tambah regex @elco.com
+            'kasir_email'    => [
+                'required',
+                'email',
+                'unique:users,email',
+                'regex:/^[a-zA-Z0-9._%+\-]+@elco\.com$/',
+            ],
             'kasir_password' => 'required|string|min:8',
+        ], [
+            'kasir_email.regex' => 'Email kasir harus menggunakan domain @elco.com.',
         ]);
 
         User::create([
