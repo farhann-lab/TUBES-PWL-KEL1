@@ -6,6 +6,9 @@
     <title>ELCO — Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    {{-- resources/views/auth/login.blade.php --}}
+
     <script>
         tailwind.config = {
             theme: {
@@ -186,7 +189,18 @@
         <div class="w-5/12 opacity-0 animate-slide-up" style="animation-delay:0.15s; animation-fill-mode:forwards;">
             <h1 class="font-sans text-amber-900 leading-tight"
                 style="font-size:clamp(2.4rem,4.5vw,3.6rem); font-weight:900; max-width:360px;">
-                Nice day for<br>coffee, ain't it?
+                <p>"{{ \Illuminate\Support\Arr::random([
+            'Nice day for coffee, ain\'t it?',
+            'New day, new brew! Let\'s login.',
+            'Sip, savor, login. Welcome back!',
+            'Bring the calm with coffee. Please login.',
+            'Fuel your day with a login and a latte.',
+            'Coffee and login: the perfect blend.',
+            'Login to your daily dose of coffee goodness.',
+            'A login a day keeps the grumpiness away.',
+            'Welcome back! Time to login and perk up.',
+            'Login and let the coffee do the talking.',
+        ]) }}"</p>
             </h1>
         </div>
 
@@ -262,11 +276,19 @@
                             autocomplete="current-password"
                             required
                         />
-                        <span class="toggle-pw flex-shrink-0" onclick="togglePassword()">SHOW</span>
+                        <!-- Toggle password: menggunakan image -->
+                        <img
+                            src="{{ asset('image/eye-show.png') }}"
+                            id="toggle-pw-img"
+                            class="flex-shrink-0 cursor-pointer opacity-75 hover:opacity-100 transition-opacity"
+                            onclick="togglePassword()"
+                            alt="Toggle Password"
+                            style="width: 28px; height: 28px; object-fit: contain;"
+                        />
                     </div>
 
-                    <!-- Forgot password -->
-                    <div class="flex justify-end px-3 pb-2 pt-1">
+                    <!-- Forgot password — tetap di dalam .field-wrap agar layout rapi -->
+                    <!-- <div class="flex justify-end px-3 pb-2 pt-1">
                         @if (Route::has('password.request'))
                         <a href="{{ route('password.request') }}"
                            class="font-sans text-xs font-semibold text-gold-deep hover:text-coffee-dark transition-colors duration-200 tracking-wide">
@@ -277,8 +299,8 @@
                             Lupa Password?
                         </span>
                         @endif
-                    </div>
-                </div>
+                    </div> -->
+                </div><!-- /.field-wrap password -->
 
                 <!-- Login Button -->
                 <div class="flex justify-center opacity-0 animate-slide-up"
@@ -292,14 +314,19 @@
 
     <script>
         function togglePassword() {
-            const input  = document.getElementById('password');
-            const toggle = document.querySelector('.toggle-pw');
+            const input = document.getElementById('password');
+            const toggleImg = document.getElementById('toggle-pw-img');
+
+            // Alamat gambar di dalam folder public/image/ Laravel
+            const imgShow = "{{ asset('image/eye-show.png') }}"; // ikon mata → tampilkan password
+            const imgHide = "{{ asset('image/eye-hide.png') }}"; // ikon mata → sembunyikan password
+
             if (input.type === 'password') {
                 input.type = 'text';
-                toggle.textContent = 'HIDE';
+                toggleImg.src = imgHide;
             } else {
                 input.type = 'password';
-                toggle.textContent = 'SHOW';
+                toggleImg.src = imgShow;
             }
         }
 
