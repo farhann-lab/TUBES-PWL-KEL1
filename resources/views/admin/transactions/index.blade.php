@@ -115,19 +115,22 @@
                             <i class="ph ph-eye"></i> Detail
                         </button>
                         @if($canCancel)
-                        <button onclick="openCancelModal({{ $trx->id }})"
-                            class="text-xs font-medium text-red-500 bg-red-50 px-3 py-2 rounded-xl hover:bg-red-100 smooth-transition">
-                            <i class="ph ph-x-circle"></i> {{ $isRequestCancel ? 'Konfirmasi Batal' : 'Batalkan' }}
-                        </button>
-                        @endif
-                        @if($isRequestCancel && $trx->status === 'completed')
-                        <form id="reject-cancel-{{ $trx->id }}" action="{{ route('admin.transactions.reject-cancel', $trx) }}" method="POST" class="hidden">
-                            @csrf
-                        </form>
-                        <button onclick="rejectCancelRequest({{ $trx->id }})"
-                            class="text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl hover:bg-emerald-100 smooth-transition">
-                            <i class="ph ph-check-circle"></i> Tolak Batal
-                        </button>
+                        <div class="flex flex-col gap-2">
+                            <button onclick="openCancelModal({{ $trx->id }})"
+                                class="text-xs font-medium text-red-500 bg-red-50 px-3 py-2 rounded-xl hover:bg-red-100 smooth-transition">
+                                <i class="ph ph-x-circle"></i> {{ $isRequestCancel ? 'Konfirmasi Batal' : 'Batalkan' }}
+                            </button>
+                            @if($isRequestCancel)
+                            <form action="{{ route('admin.transactions.reject-cancel', $trx->id) }}" method="POST">
+                                @csrf
+                                <button type="submit"
+                                    onclick="return confirm('Tolak permintaan pembatalan? Transaksi tetap selesai.')"
+                                    class="w-full text-xs font-medium text-gray-500 bg-gray-100 px-3 py-2 rounded-xl hover:bg-gray-200 smooth-transition">
+                                    <i class="ph ph-arrow-u-up-left"></i> Tolak Batal
+                                </button>
+                            </form>
+                            @endif
+                        </div>
                         @endif
                     </div>
                 </td>

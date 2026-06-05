@@ -131,7 +131,7 @@
                 <td class="py-4 px-6">
                     <div class="flex items-center gap-3">
                         @if($stock->menu->image)
-                            <img src="{{ Storage::disk('public')->url($stock->menu->image) }}"
+                            <img src="{{ asset('storage/' . ltrim($stock->menu->image, '/')) }}"
                                  class="w-10 h-10 rounded-xl object-cover">
                         @else
                             <div class="w-10 h-10 rounded-xl bg-orange-50 text-orange-400 flex items-center justify-center">
