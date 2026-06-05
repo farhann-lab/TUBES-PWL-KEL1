@@ -19,8 +19,23 @@ class RoleMiddleware
             return redirect('/login');
         }
 
+        // Paksa logout jika akun dinonaktifkan
+        if (!auth()->user()->is_active) {
+            auth()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return redirect('/login')->withErrors([
+                'email' => 'Akun ini telah dinonaktifkan. Hubungi Manager.',
+            ]);
+        }
+
         if (!in_array(auth()->user()->role, $roles)) {
-            abort(403, 'Kamu tidak memiliki akses ke halaman ini.');
+            return match (auth()->user()->role) {
+                'manager' => redirect()->route('manager.dashboard'),
+                'admin' => redirect()->route('admin.dashboard'),
+                'kasir' => redirect()->route('kasir.transactions.index'),
+                default => redirect('/login'),
+            };
         }
 
         return $next($request);

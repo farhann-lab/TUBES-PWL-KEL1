@@ -19,7 +19,7 @@ class PreventBackHistory
         }
 
         return $response->withHeaders([
-            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0, private',
             'Pragma'        => 'no-cache',
             'Expires'       => '0',
         ]);
