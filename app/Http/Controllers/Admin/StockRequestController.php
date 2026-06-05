@@ -38,45 +38,31 @@ class StockRequestController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'type'            => 'required|in:stock,operational',
-            'item_name'       => 'nullable|string|max:150',
-            'item_name_bahan' => 'nullable|string|max:150',
-            'item_name_produk' => 'nullable|string|max:150',
-            'item_name_ops'   => 'nullable|string|max:150',
-            'unit'            => 'nullable|string|max:20',
-            'quantity'        => 'required|numeric|min:1',
-            'reason'          => 'nullable|string',
-            'stock_item_type' => 'required_if:type,stock|nullable|in:bahan_baku,produk_jadi',
+        $request->validate([
+            'items'              => 'required|array|min:1',
+            'items.*.item_name'  => 'required|string|max:150',
+            'items.*.quantity'   => 'required|numeric|min:1',
+            'items.*.unit'       => 'nullable|string|max:20',
+            'items.*.tipe'       => 'required|in:bahan_baku,produk_jadi,operasional',
+            'reason'             => 'nullable|string',
         ]);
 
-        $itemName = match ($validated['type']) {
-            'operational' => $validated['item_name_ops'] ?? $validated['item_name'] ?? null,
-            default => ($validated['stock_item_type'] ?? null) === 'produk_jadi'
-                ? ($validated['item_name_produk'] ?? $validated['item_name'] ?? null)
-                : ($validated['item_name_bahan'] ?? $validated['item_name'] ?? null),
-        };
-
-        if (!$itemName) {
-            return back()
-                ->withErrors(['item_name' => 'Nama kebutuhan wajib diisi.'])
-                ->withInput();
+        foreach ($request->items as $item) {
+            StockRequest::create([
+                'branch_id'       => auth()->user()->branch_id,
+                'requested_by'    => auth()->id(),
+                'type'            => $item['tipe'] === 'operasional' ? 'operational' : 'stock',
+                'stock_item_type' => in_array($item['tipe'], ['bahan_baku','produk_jadi']) ? $item['tipe'] : null,
+                'item_name'       => $item['item_name'],
+                'unit'            => $item['unit'] ?? null,
+                'quantity'        => $item['quantity'],
+                'reason'          => $request->reason,
+                'status'          => 'pending',
+            ]);
         }
 
-        StockRequest::create([
-            'branch_id'       => auth()->user()->branch_id,
-            'requested_by'    => auth()->id(),
-            'type'            => $validated['type'],
-            'stock_item_type' => $validated['type'] === 'stock' ? $validated['stock_item_type'] : null,
-            'item_name'       => $itemName,
-            'unit'            => $validated['unit'] ?? null,
-            'quantity'        => $validated['quantity'],
-            'reason'          => $validated['reason'] ?? null,
-            'status'          => 'pending',
-        ]);
-
         return redirect()->route('admin.stock-requests.index')
-                         ->with('success', 'Pengajuan berhasil dikirim ke Manager Pusat!');
+                        ->with('success', count($request->items) . ' pengajuan berhasil dikirim ke Manager!');
     }
 
     /**
@@ -87,7 +73,7 @@ class StockRequestController extends Controller
     {
         $request->validate([
             'delivery_note'  => 'required|string|min:5',
-            'delivery_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:3072',
+            'delivery_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
         if ($stockRequest->status !== 'approved') {

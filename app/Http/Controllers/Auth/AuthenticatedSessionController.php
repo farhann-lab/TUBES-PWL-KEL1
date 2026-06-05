@@ -26,13 +26,13 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
         $request->session()->regenerate();
+        $request->session()->forget('url.intended');
 
-        // Redirect berdasarkan role
-        return match(auth()->user()->role) {
-            'manager' => redirect()->intended('/manager/dashboard'),
-            'admin'   => redirect()->intended('/admin/dashboard'),
-            'kasir'   => redirect()->intended('/kasir/transactions'), // ← ganti dari dashboard
-            default   => redirect('/'),
+        return match (auth()->user()->role) {
+            'manager' => redirect()->route('manager.dashboard'),
+            'admin' => redirect()->route('admin.dashboard'),
+            'kasir' => redirect()->route('kasir.transactions.index'),
+            default => redirect('/'),
         };
     }
 
@@ -43,14 +43,15 @@ class AuthenticatedSessionController extends Controller
     {
         Auth::guard('web')->logout();
 
+        $request->session()->forget('url.intended');
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
-        return redirect('/')->withHeaders([
-            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+        return redirect()->route('login')->withHeaders([
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0, private',
             'Pragma' => 'no-cache',
             'Expires' => '0',
+            'Clear-Site-Data' => '"cache"',
         ]);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\BranchStock;
 use App\Models\Expense;
+use App\Models\IngredientStock;
 use App\Models\Transaction;
 use DateTime;
 use Illuminate\Http\Request;
@@ -73,11 +74,59 @@ class ReportController extends Controller
             ->groupBy('category')
             ->get();
 
-        $criticalStocks = BranchStock::where('branch_id', $branchId)
-            ->where('stock', '<=', 5)
-            ->whereHas('menu', fn ($query) => $query->where('stock_type', 'kuantitas_jadi'))
-            ->with('menu')
-            ->get();
+        $ingredientStockMap = IngredientStock::with('ingredient')
+            ->where('branch_id', $branchId)
+            ->get()
+            ->keyBy('ingredient_id');
+
+        $criticalStocks = BranchStock::with(['menu.ingredients.ingredient'])
+            ->where('branch_id', $branchId)
+            ->get()
+            ->filter(fn ($stock) => $stock->menu)
+            ->map(function (BranchStock $stock) use ($ingredientStockMap) {
+                $menu = $stock->menu;
+
+                if ($menu->isQuantityBased()) {
+                    $remaining = (float) $stock->stock;
+
+                    return $remaining <= 5 ? [
+                        'name' => $menu->name,
+                        'category' => $menu->category,
+                        'remaining' => max(0, $remaining),
+                        'unit' => 'sisa',
+                        'status' => $remaining <= 0 ? 'Habis' : 'Kritis',
+                    ] : null;
+                }
+
+                $minPortions = null;
+                $isCriticalIngredient = false;
+
+                foreach ($menu->ingredients as $menuIngredient) {
+                    $ingredientStock = $ingredientStockMap->get($menuIngredient->ingredient_id);
+                    $available = (float) ($ingredientStock?->stok_sekarang ?? 0);
+                    $minimum = (float) ($ingredientStock?->stok_minimum ?? 0);
+                    $perServing = (float) $menuIngredient->jumlah_per_sajian;
+                    $portions = $perServing > 0 ? (int) floor($available / $perServing) : 0;
+
+                    $minPortions = is_null($minPortions) ? $portions : min($minPortions, $portions);
+
+                    if (! $ingredientStock || $available <= $minimum) {
+                        $isCriticalIngredient = true;
+                    }
+                }
+
+                $minPortions = $minPortions ?? 0;
+
+                return ($minPortions < 1 || $isCriticalIngredient) ? [
+                    'name' => $menu->name,
+                    'category' => $menu->category,
+                    'remaining' => max(0, $minPortions),
+                    'unit' => 'porsi',
+                    'status' => $minPortions < 1 ? 'Habis' : 'Kritis',
+                ] : null;
+            })
+            ->filter()
+            ->values();
 
         return view('admin.reports.index', compact(
             'month',
