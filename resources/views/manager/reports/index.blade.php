@@ -48,6 +48,10 @@
             class="px-5 py-2 bg-elco-coffee text-white text-sm font-semibold rounded-xl hover:bg-elco-mocha smooth-transition">
             <i class="ph ph-funnel mr-1"></i> Filter
         </button>
+        <a href="{{ route('manager.reports.export', ['month' => $month, 'year' => $year, 'branch_id' => $branchId ?? '']) }}"
+        class="flex items-center gap-2 px-5 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 smooth-transition">
+            <i class="ph ph-download-simple"></i> Download CSV
+        </a>
     </form>
 </div>
 

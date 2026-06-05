@@ -83,22 +83,15 @@
                 {{-- Aksi Review --}}
                 @if($promo->review_status === 'pending')
                 <div class="flex gap-2 pt-2 border-t border-gray-100">
-                    <form id="approve-promo-{{ $promo->id }}"
-                          action="{{ route('manager.promotions.approve', $promo) }}" method="POST" class="flex-1">
-                        @csrf
-                        <button type="button"
-                            onclick="elcoConfirm({
-                                title: 'Setujui Promo?',
-                                text: '{{ addslashes($promo->name) }} akan aktif di cabang.',
-                                confirmText: 'Setujui',
-                                confirmColor: '#10b981',
-                                icon: 'question',
-                                onConfirm: () => document.getElementById('approve-promo-{{ $promo->id }}').submit()
-                            })"
-                            class="w-full text-xs font-medium text-emerald-600 bg-emerald-50 py-2 rounded-xl hover:bg-emerald-100 smooth-transition">
-                            <i class="ph ph-check"></i> Setujui
-                        </button>
-                    </form>
+                    {{-- Cari semua onclick="elcoConfirm(..." di file ini dan ganti jadi: --}}
+                <form action="{{ route('manager.promotions.approve', $promo) }}" method="POST" class="inline">
+                    @csrf
+                    <button type="submit"
+                        onclick="return confirm('Setujui promo {{ addslashes($promo->name) }}?')"
+                        class="text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl hover:bg-emerald-100 smooth-transition">
+                        <i class="ph ph-check"></i> Setujui
+                    </button>
+                </form>
                     <button onclick="openRejectPromoModal({{ $promo->id }})"
                         class="flex-1 text-xs font-medium text-red-500 bg-red-50 py-2 rounded-xl hover:bg-red-100 smooth-transition">
                         <i class="ph ph-x"></i> Tolak
