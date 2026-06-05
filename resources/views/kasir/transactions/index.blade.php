@@ -15,6 +15,28 @@
     </div>
 @endif
 
+{{-- Modal Input Nama Kasir --}}
+<div id="namaModal" class="{{ session('kasir_nama') ? 'hidden' : '' }} fixed inset-0 bg-black/60 backdrop-blur-sm z-50 items-center justify-center" style="{{ session('kasir_nama') ? 'display:none' : 'display:flex' }}">
+    <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-sm mx-4">
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-elco-cream rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <i class="ph-fill ph-user text-3xl text-elco-coffee"></i>
+            </div>
+            <h3 class="font-display font-bold text-gray-800 text-xl">Selamat Datang!</h3>
+            <p class="text-sm text-gray-500 mt-1">Masukkan nama Anda untuk memulai</p>
+        </div>
+        <form action="{{ route('kasir.set-nama') }}" method="POST" class="space-y-4">
+            @csrf
+            <input type="text" name="kasir_nama" placeholder="Nama Anda" required
+                class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm text-center text-lg font-semibold">
+            <button type="submit"
+                class="w-full py-3 rounded-2xl bg-gradient-to-r from-elco-coffee to-elco-mocha text-white text-sm font-semibold shadow-md hover:shadow-hover smooth-transition">
+                Mulai Kasir
+            </button>
+        </form>
+    </div>
+</div>
+
 <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
     {{-- KIRI: Daftar Menu --}}
     <div class="space-y-4 xl:col-span-2">
@@ -43,18 +65,23 @@
                     $isIngredientBased = $stock->menu->isIngredientBased();
                     $available = (int) ($stock->available_portions ?? ($isIngredientBased ? 0 : $stock->stock));
                     $cartLimit = $available;
+                    $isUnavailable = $available <= 0;
                 @endphp
 
                 <div
-                    class="menu-item cursor-pointer overflow-hidden rounded-2xl bg-white shadow-soft smooth-transition hover:-translate-y-1 hover:shadow-hover active:scale-95"
+                    id="menu-stock-{{ $stock->id }}"
+                    class="menu-item overflow-hidden rounded-2xl bg-white shadow-soft smooth-transition {{ $isUnavailable ? 'pointer-events-none cursor-not-allowed opacity-60 grayscale' : 'cursor-pointer hover:-translate-y-1 hover:shadow-hover active:scale-95' }}"
+                    data-stock-id="{{ $stock->id }}"
                     data-category="{{ $stock->menu->category }}"
-                    onclick="addToCart({{ $stock->id }}, @js($stock->menu->name), {{ $stock->custom_price ?? $stock->menu->base_price }}, {{ $cartLimit }}, {{ $isIngredientBased ? 'true' : 'false' }})"
+                    @unless($isUnavailable)
+                        onclick="addToCart({{ $stock->id }})"
+                    @endunless
                 >
                     {{-- Gambar --}}
                     <div class="relative h-32 bg-gradient-to-br from-elco-cream to-orange-50">
                         @if($stock->menu->image)
                             <img
-                                src="{{ Storage::disk('public')->url($stock->menu->image) }}"
+                                src="{{ asset('storage/' . ltrim($stock->menu->image, '/')) }}"
                                 alt="{{ $stock->menu->name }}"
                                 class="h-full w-full object-cover"
                             >
@@ -64,8 +91,8 @@
                             </div>
                         @endif
 
-                        <span class="absolute bottom-2 right-2 rounded-lg bg-white/80 px-2 py-0.5 text-xs font-semibold text-gray-600 backdrop-blur-sm">
-                            {{ $isIngredientBased ? 'Sisa: '.$available.' porsi' : 'Stok: '.$available }}
+                        <span id="stock-badge-{{ $stock->id }}" class="absolute bottom-2 right-2 rounded-lg px-2 py-0.5 text-xs font-semibold backdrop-blur-sm {{ $isUnavailable ? 'bg-red-500 text-white' : 'bg-white/80 text-gray-600' }}">
+                            {{ $isUnavailable ? 'Habis' : ($isIngredientBased ? 'Sisa: '.$available.' porsi' : 'Stok: '.$available) }}
                         </span>
                     </div>
 
@@ -191,11 +218,11 @@
     </div>
 </div>
 
-{{-- Riwayat Hari Ini --}}
+{{-- Riwayat Transaksi --}}
 <div class="mt-6 overflow-hidden rounded-3xl bg-white shadow-soft">
     <div class="flex flex-col gap-2 border-b border-gray-100 p-6 sm:flex-row sm:items-end sm:justify-between">
-        <h3 class="font-display text-lg font-bold text-gray-800">Transaksi Hari Ini</h3>
-        <p class="text-sm text-gray-500">{{ $todayTransactions->count() }} transaksi</p>
+        <h3 class="font-display text-lg font-bold text-gray-800">Riwayat Transaksi</h3>
+        <p class="text-sm text-gray-500">{{ $todayTransactions->count() }} transaksi terbaru</p>
     </div>
 
     @if($todayTransactions->count() > 0)
@@ -214,12 +241,15 @@
                     @foreach($todayTransactions as $trx)
                         @php
                             $isRequestCancel = str_starts_with($trx->cancel_reason ?? '', '[REQUEST CANCEL]');
+                            $canRequestCancel = $trx->status === 'completed'
+                                && ! $isRequestCancel
+                                && $trx->created_at->diffInMinutes(now()) <= 60;
                         @endphp
 
                         <tr class="border-b border-gray-50 smooth-transition last:border-0 hover:bg-gray-50">
                             <td class="px-6 py-4">
                                 <p class="text-base font-semibold text-gray-800">{{ $trx->invoice_number }}</p>
-                                <p class="text-xs text-gray-400">{{ $trx->created_at->format('H:i') }}</p>
+                                <p class="text-xs text-gray-400">{{ $trx->created_at->format('d M Y, H:i') }}</p>
                             </td>
 
                             <td class="px-6 py-4 text-sm text-gray-600">{{ $trx->items->count() }} item</td>
@@ -245,7 +275,7 @@
 
                             <td class="px-6 py-4">
                                 <div class="flex flex-wrap gap-2">
-                                    @if($trx->status === 'completed' && ! $isRequestCancel)
+                                    @if($canRequestCancel)
                                         <button
                                             type="button"
                                             onclick="requestCancel({{ $trx->id }})"
@@ -254,6 +284,10 @@
                                             <i class="ph ph-x-circle mr-1"></i>
                                             Minta Batal
                                         </button>
+                                    @elseif($trx->status === 'completed' && ! $isRequestCancel)
+                                        <span class="rounded-xl bg-gray-50 px-4 py-2 text-sm font-medium text-gray-400 whitespace-nowrap">
+                                            Batas batal lewat
+                                        </span>
                                     @endif
 
                                     <a
@@ -271,7 +305,7 @@
             </table>
         </div>
     @else
-        <div class="py-10 text-center text-sm text-gray-400">Belum ada transaksi hari ini</div>
+        <div class="py-10 text-center text-sm text-gray-400">Belum ada riwayat transaksi</div>
     @endif
 </div>
 
@@ -316,11 +350,44 @@
 </div>
 @endsection
 
+@php
+    $ingredientStockPayload = $ingredientStocks
+        ->map(fn ($stock) => (float) $stock)
+        ->all();
+
+    $menuCatalogPayload = $stocks
+        ->mapWithKeys(function ($stock) {
+            $menu = $stock->menu;
+
+            return [
+                (string) $stock->id => [
+                    'stockId' => $stock->id,
+                    'name' => $menu->name,
+                    'price' => (float) ($stock->custom_price ?? $menu->base_price),
+                    'ingredientBased' => $menu->isIngredientBased(),
+                    'baseStock' => (int) ($menu->isIngredientBased() ? ($stock->available_portions ?? 0) : $stock->stock),
+                    'ingredients' => $menu->isIngredientBased()
+                        ? $menu->ingredients
+                            ->map(fn ($mi) => [
+                                'id' => (string) $mi->ingredient_id,
+                                'qty' => (float) $mi->jumlah_per_sajian,
+                            ])
+                            ->values()
+                            ->all()
+                        : [],
+                ],
+            ];
+        })
+        ->all();
+@endphp
+
 @push('scripts')
 <script>
 // ── State Keranjang ──────────────────────────────────────
 let cart = {};
 const rupiah = number => 'Rp ' + Number(number).toLocaleString('id-ID');
+const ingredientStocks = @json($ingredientStockPayload);
+const menuCatalog = @json($menuCatalogPayload);
 
 function escapeHtml(value) {
     const div = document.createElement('div');
@@ -329,33 +396,108 @@ function escapeHtml(value) {
 }
 
 // ── Tambah ke Keranjang ──────────────────────────────────
-function addToCart(stockId, name, price, maxStock, ingredientBased = false) {
-    maxStock = parseInt(maxStock);
+function reservedIngredients() {
+    const reserved = {};
 
-    if (maxStock <= 0) {
-        elcoError('Stok Habis', ingredientBased ? `Sisa porsi ${name} kosong` : `Stok ${name} kosong`);
+    Object.values(cart).forEach(item => {
+        if (!item.ingredientBased) return;
+
+        item.ingredients.forEach(ingredient => {
+            reserved[ingredient.id] = (reserved[ingredient.id] || 0) + (ingredient.qty * item.qty);
+        });
+    });
+
+    return reserved;
+}
+
+function projectedAvailable(stockId) {
+    const menu = menuCatalog[String(stockId)];
+    if (!menu) return 0;
+
+    if (!menu.ingredientBased) {
+        return Math.max(0, menu.baseStock - (cart[stockId]?.qty || 0));
+    }
+
+    if (!menu.ingredients.length) return 0;
+
+    const reserved = reservedIngredients();
+    const portions = menu.ingredients.map(ingredient => {
+        const currentStock = Number(ingredientStocks[ingredient.id] || 0);
+        const remainingStock = currentStock - Number(reserved[ingredient.id] || 0);
+        return ingredient.qty > 0 ? Math.floor(remainingStock / ingredient.qty) : 0;
+    });
+
+    return Math.max(0, Math.min(...portions));
+}
+
+function updateMenuAvailability() {
+    Object.keys(menuCatalog).forEach(stockId => {
+        const menu = menuCatalog[stockId];
+        const card = document.getElementById(`menu-stock-${stockId}`);
+        const badge = document.getElementById(`stock-badge-${stockId}`);
+        const available = projectedAvailable(stockId);
+        const isEmpty = available <= 0;
+
+        if (card) {
+            card.classList.toggle('pointer-events-none', isEmpty);
+            card.classList.toggle('cursor-not-allowed', isEmpty);
+            card.classList.toggle('opacity-60', isEmpty);
+            card.classList.toggle('grayscale', isEmpty);
+            card.classList.toggle('cursor-pointer', !isEmpty);
+            card.classList.toggle('hover:-translate-y-1', !isEmpty);
+            card.classList.toggle('hover:shadow-hover', !isEmpty);
+            card.classList.toggle('active:scale-95', !isEmpty);
+        }
+
+        if (badge) {
+            badge.textContent = isEmpty
+                ? 'Habis'
+                : (menu.ingredientBased ? `Sisa: ${available} porsi` : `Stok: ${available}`);
+            badge.classList.toggle('bg-red-500', isEmpty);
+            badge.classList.toggle('text-white', isEmpty);
+            badge.classList.toggle('bg-white/80', !isEmpty);
+            badge.classList.toggle('text-gray-600', !isEmpty);
+        }
+    });
+}
+
+function addToCart(stockId) {
+    const menu = menuCatalog[String(stockId)];
+    if (!menu) return;
+
+    const available = projectedAvailable(stockId);
+    if (available <= 0) {
+        showAlert(menu.ingredientBased ? `Bahan baku untuk ${menu.name} habis!` : `Stok ${menu.name} habis!`, 'warning');
         return;
     }
 
     if (cart[stockId]) {
-        if (cart[stockId].qty >= maxStock) {
-            elcoError('Stok Habis', ingredientBased ? `Sisa porsi ${name} hanya ${maxStock}` : `Stok ${name} hanya tersisa ${maxStock}`);
-            return;
-        }
-
         cart[stockId].qty++;
     } else {
         cart[stockId] = {
             stockId,
-            name,
-            price: parseFloat(price),
+            name: menu.name,
+            price: menu.price,
             qty: 1,
-            maxStock,
-            ingredientBased,
+            ingredientBased: menu.ingredientBased,
+            ingredients: menu.ingredients,
         };
     }
 
     renderCart();
+}
+
+function showAlert(message, type = 'error') {
+    const colors = {
+        error: 'bg-red-50 border-red-200 text-red-700',
+        warning: 'bg-yellow-50 border-yellow-200 text-yellow-700',
+        success: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+    };
+    const div = document.createElement('div');
+    div.className = `fixed top-4 right-4 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl border ${colors[type]} shadow-lg`;
+    div.innerHTML = `<i class="ph ph-warning-circle text-xl"></i><span class="text-sm font-medium">${message}</span>`;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 3000);
 }
 
 // ── Render Keranjang ─────────────────────────────────────
@@ -369,12 +511,14 @@ function renderCart() {
                 <i class="ph ph-shopping-cart mb-2 block text-3xl"></i>
                 <p class="text-sm">Pilih menu untuk ditambahkan</p>
             </div>`;
+        updateMenuAvailability();
         updateTotals();
         return;
     }
 
     container.innerHTML = keys.map(id => {
         const item = cart[id];
+        const canAdd = projectedAvailable(id) > 0;
 
         return `
             <div class="flex items-center justify-between rounded-2xl bg-gray-50 p-3">
@@ -393,12 +537,14 @@ function renderCart() {
                     <button
                         type="button"
                         onclick="changeQty(${id}, 1)"
-                        class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-base font-bold text-gray-600 smooth-transition hover:bg-emerald-50 hover:text-emerald-500"
+                        ${canAdd ? '' : 'disabled'}
+                        class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-base font-bold text-gray-600 smooth-transition hover:bg-emerald-50 hover:text-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
                     >+</button>
                 </div>
             </div>`;
     }).join('');
 
+    updateMenuAvailability();
     updateTotals();
 }
 
@@ -406,12 +552,16 @@ function renderCart() {
 function changeQty(id, delta) {
     if (!cart[id]) return;
 
+    if (delta > 0 && projectedAvailable(id) <= 0) {
+        const item = cart[id];
+        showAlert(item.ingredientBased ? `Sisa porsi ${item.name} tidak cukup.` : `Stok ${item.name} tidak cukup.`, 'warning');
+        return;
+    }
+
     cart[id].qty += delta;
 
     if (cart[id].qty <= 0) {
         delete cart[id];
-    } else if (cart[id].qty > cart[id].maxStock) {
-        cart[id].qty = cart[id].maxStock;
     }
 
     renderCart();
@@ -569,12 +719,16 @@ async function processTransaction() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
             },
             body: JSON.stringify({ items, payment_method: paymentMethod, promotion_id: promotionId }),
         });
 
-        const data = await response.json();
+        const data = await response.json().catch(() => ({
+            success: false,
+            message: 'Server mengembalikan respon yang tidak valid.',
+        }));
 
         if (data.success) {
             document.getElementById('invoiceDisplay').textContent = data.invoice ?? '';
@@ -588,7 +742,21 @@ async function processTransaction() {
             document.getElementById('successModal').classList.add('flex');
             clearCart();
         } else {
-            elcoError('Transaksi Gagal', data.message ?? 'Terjadi kesalahan!');
+            const msg = data.message ?? 'Terjadi kesalahan!';
+
+            // Cek apakah error berkaitan dengan promo
+            if (msg.toLowerCase().includes('promo') || msg.toLowerCase().includes('syarat') || msg.toLowerCase().includes('minimum')) {
+                showAlert(msg, 'warning');
+
+                // Reset pilihan promo otomatis
+                const promoSelect = document.getElementById('promoSelect');
+                if (promoSelect) {
+                    promoSelect.value = '';
+                    applyPromo();
+                }
+            } else {
+                elcoError('Transaksi Gagal', msg);
+            }
         }
     } catch (error) {
         elcoError('Error', 'Gagal terhubung ke server. Coba lagi.');
@@ -663,5 +831,6 @@ function updateTime() {
 
 setInterval(updateTime, 1000);
 updateTime();
+updateMenuAvailability();
 </script>
 @endpush
