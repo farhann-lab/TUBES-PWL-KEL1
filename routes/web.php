@@ -20,7 +20,6 @@ use App\Http\Controllers\Admin\TransactionController as AdminTransaction;
 use App\Http\Controllers\Manager\ReportController as ManagerReport;
 use App\Http\Controllers\Admin\ReportController as AdminReport;
 use App\Http\Controllers\Manager\TransactionController as ManagerTransaction;
-use App\Http\Controllers\Kasir\ShiftController;
 use App\Http\Controllers\Admin\ShiftScheduleController;
 use App\Http\Controllers\Admin\KasirController;
 

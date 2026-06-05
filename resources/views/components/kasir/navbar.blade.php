@@ -42,14 +42,6 @@
                 Edit Profil
             </a>
 
-            <a
-                href="{{ route('kasir.shifts.index') }}"
-                class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 smooth-transition"
-            >
-                <i class="ph ph-clock text-gray-400"></i>
-                Shift Saya
-            </a>
-
             <div class="mt-1 border-t border-gray-100">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

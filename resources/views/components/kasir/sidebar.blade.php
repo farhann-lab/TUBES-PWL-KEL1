@@ -62,20 +62,6 @@
             @endif
         </a>
 
-        {{-- Shift Saya --}}
-        <a href="{{ route('kasir.shifts.index') }}"
-           class="elco-nav-item flex items-center gap-3 px-[14px] py-[11px] rounded-2xl font-medium smooth-transition mb-0.5 no-underline
-           {{ request()->routeIs('kasir.shifts*') ? 'elco-nav-active' : 'text-[rgba(80,50,25,0.6)]' }}"
-           :class="open ? '' : 'justify-center !px-0 !gap-0'">
-            <i class="{{ request()->routeIs('kasir.shifts*') ? 'ph-fill' : 'ph' }} ph-clock text-xl flex-shrink-0"></i>
-            <span class="elco-label-transition overflow-hidden whitespace-nowrap"
-                  :class="open ? 'max-w-[140px] opacity-100' : 'max-w-0 opacity-0'">Shift Saya</span>
-            @if(request()->routeIs('kasir.shifts*'))
-                <i class="ph ph-arrow-right ml-auto text-sm elco-label-transition"
-                   :class="open ? 'max-w-[20px] opacity-100' : 'max-w-0 opacity-0 overflow-hidden'"></i>
-            @endif
-        </a>
-
         {{-- ─── Section Label: Lainnya ─── --}}
         <div class="elco-section-collapse overflow-hidden whitespace-nowrap px-2"
              :class="open ? 'max-h-10 opacity-100 pt-4 pb-1' : 'max-h-0 opacity-0 pt-0 pb-0'"
