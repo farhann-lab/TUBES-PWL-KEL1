@@ -44,7 +44,7 @@
         {{-- Gambar Menu --}}
         <div class="h-44 bg-gradient-to-br from-elco-cream to-orange-50 relative overflow-hidden">
             @if($menu->image)
-                <img src="{{ Storage::disk('public')->url($menu->image) }}"
+                <img src="{{ asset('storage/' . ltrim($menu->image, '/')) }}"
                      alt="{{ $menu->name }}"
                      class="w-full h-full object-cover">
             @else

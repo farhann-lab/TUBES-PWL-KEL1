@@ -98,14 +98,40 @@
                                 class="text-xs font-medium text-elco-coffee bg-elco-cream px-3 py-2 rounded-xl hover:bg-elco-latte/30 smooth-transition">
                                     <i class="ph ph-pencil"></i> Edit
                                 </a>
-                                <form action="{{ route('manager.branches.destroy', $branch->id) }}"
-                                    method="POST" class="inline"
-                                    onsubmit="return confirm('Hapus cabang {{ addslashes($branch->name) }} secara permanen? Tindakan ini tidak dapat dibatalkan!')">
+
+                                {{-- Nonaktifkan sementara --}}
+                                @if($branch->status === 'active')
+                                <form action="{{ route('manager.branches.deactivate', $branch) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit"
+                                        onclick="return confirm('Nonaktifkan cabang {{ addslashes($branch->name) }} sementara?')"
+                                        class="text-xs font-medium text-yellow-600 bg-yellow-50 px-3 py-2 rounded-xl hover:bg-yellow-100 smooth-transition">
+                                        <i class="ph ph-pause-circle"></i> Nonaktifkan
+                                    </button>
+                                </form>
+                                @else
+                                <form action="{{ route('manager.branches.update', $branch) }}" method="POST" class="inline">
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="hidden" name="name" value="{{ $branch->name }}">
+                                    <input type="hidden" name="address" value="{{ $branch->address }}">
+                                    <input type="hidden" name="phone" value="{{ $branch->phone }}">
+                                    <input type="hidden" name="status" value="active">
+                                    <button type="submit"
+                                        class="text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl hover:bg-emerald-100 smooth-transition">
+                                        <i class="ph ph-play-circle"></i> Aktifkan
+                                    </button>
+                                </form>
+                                @endif
+
+                                {{-- Hapus permanen --}}
+                                <form action="{{ route('manager.branches.destroy', $branch->id) }}" method="POST" class="inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit"
+                                        onclick="return confirm('HAPUS PERMANEN cabang {{ addslashes($branch->name) }}?\n\nSemua akun admin dan kasir cabang ini akan dihapus permanen.\nTindakan ini TIDAK DAPAT dibatalkan!')"
                                         class="text-xs font-medium text-red-500 bg-red-50 px-3 py-2 rounded-xl hover:bg-red-100 smooth-transition">
-                                        <i class="ph ph-trash"></i> Hapus
+                                        <i class="ph ph-trash"></i> Hapus Permanen
                                     </button>
                                 </form>
                             </div>
@@ -157,7 +183,7 @@
     </div>
 </div>
 @endsection
-<!-- 
+
 @push('scripts')
 <script>
 function openDeleteBranchModal(id, name) {
@@ -169,4 +195,4 @@ function closeDeleteBranchModal() {
     document.getElementById('deleteBranchModal').classList.add('hidden');
 }
 </script>
-@endpush -->
+@endpush

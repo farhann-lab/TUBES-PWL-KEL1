@@ -80,7 +80,7 @@
             </div>
         </form>
     </div>
-    {{-- Daftar Admin & Kasir --}}
+    {{-- Daftar Admin --}}
     <div class="mt-6 space-y-4">
 
         {{-- Admin --}}
@@ -103,52 +103,6 @@
             @empty
             <p class="text-sm text-gray-400 text-center py-4">Belum ada admin</p>
             @endforelse
-        </div>
-
-        {{-- Kasir --}}
-        <div class="bg-white rounded-3xl shadow-soft p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-display font-semibold text-gray-800">
-                    <i class="ph ph-users mr-2 text-emerald-500"></i>Kasir Cabang
-                </h3>
-                <button onclick="document.getElementById('addKasirForm').classList.toggle('hidden')"
-                    class="text-xs font-medium text-elco-coffee bg-elco-cream px-3 py-2 rounded-xl hover:bg-elco-latte/30 smooth-transition">
-                    <i class="ph ph-plus"></i> Tambah Kasir
-                </button>
-            </div>
-
-            @forelse($kasirs as $kasir)
-            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-2xl mb-2">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center font-bold">
-                        {{ strtoupper(substr($kasir->name, 0, 1)) }}
-                    </div>
-                    <div>
-                        <p class="text-sm font-semibold text-gray-800">{{ $kasir->name }}</p>
-                        <p class="text-xs text-gray-500">{{ $kasir->email }}</p>
-                    </div>
-                </div>
-            </div>
-            @empty
-            <p class="text-sm text-gray-400 text-center py-2">Belum ada kasir</p>
-            @endforelse
-
-            {{-- Form Tambah Kasir --}}
-            <div id="addKasirForm" class="hidden mt-4 p-4 bg-gray-50 rounded-2xl">
-                <form action="{{ route('manager.branches.add-kasir', $branch) }}" method="POST" class="space-y-3">
-                    @csrf
-                    <input type="text" name="kasir_name" placeholder="Nama Kasir"
-                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm">
-                    <input type="email" name="kasir_email" placeholder="Email Kasir"
-                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm">
-                    <input type="password" name="kasir_password" placeholder="Password (min 8 karakter)"
-                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm">
-                    <button type="submit"
-                        class="w-full py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 smooth-transition">
-                        Simpan Kasir
-                    </button>
-                </form>
-            </div>
         </div>
     </div>
 </div>
