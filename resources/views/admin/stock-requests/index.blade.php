@@ -20,7 +20,8 @@
 </div>
 
 <div class="bg-white rounded-3xl shadow-soft overflow-hidden">
-    <table class="w-full text-left">
+    <div class="overflow-x-auto">
+    <table class="w-full min-w-[900px] text-left">
         <thead>
             <tr class="text-xs text-gray-400 border-b border-gray-100 bg-gray-50">
                 <th class="py-4 px-6 font-medium">Item</th>
@@ -28,6 +29,8 @@
                 <th class="py-4 px-6 font-medium">Jumlah</th>
                 <th class="py-4 px-6 font-medium">Tanggal</th>
                 <th class="py-4 px-6 font-medium">Status</th>
+                <th class="py-4 px-6 font-medium">Aksi</th>
+                <th class="py-4 px-6 font-medium">Bukti</th>
                 <th class="py-4 px-6 font-medium">Catatan</th>
             </tr>
         </thead>
@@ -89,6 +92,19 @@
                     <span class="text-xs text-gray-400">—</span>
                     @endif
                 </td>
+                <td class="py-4 px-6">
+                    @if($req->delivery_photo)
+                        <a href="{{ asset('storage/' . ltrim($req->delivery_photo, '/')) }}" target="_blank"
+                           class="block group w-fit">
+                            <img src="{{ asset('storage/' . ltrim($req->delivery_photo, '/')) }}"
+                                 class="w-16 h-16 rounded-xl object-cover border border-gray-200 group-hover:opacity-80 smooth-transition"
+                                 alt="Bukti penerimaan">
+                            <p class="text-xs text-elco-coffee mt-1 group-hover:underline">Lihat</p>
+                        </a>
+                    @else
+                        <span class="text-xs text-gray-300">-</span>
+                    @endif
+                </td>
                 <td class="py-4 px-6 text-sm text-gray-500 max-w-xs">
                     {{ $req->rejection_note ?? '-' }}
                 </td>
@@ -96,7 +112,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="6" class="py-12 text-center text-gray-400">
+                <td colspan="8" class="py-12 text-center text-gray-400">
                     <i class="ph ph-clipboard-text text-4xl block mb-2"></i>
                     Belum ada pengajuan
                 </td>
@@ -104,8 +120,11 @@
             @endforelse
         </tbody>
     </table>
-    {{-- Modal Konfirmasi Barang Sampai --}}
-    `<div id="deliveryModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+    </div>
+</div>
+
+{{-- Modal Konfirmasi Barang Sampai --}}
+<div id="deliveryModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
         <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md mx-4">
             <h3 class="font-display font-bold text-gray-800 text-lg mb-2">
                 <i class="ph ph-package mr-2 text-emerald-500"></i>Konfirmasi Barang Sampai
@@ -126,6 +145,7 @@
                         <div id="deliveryUploadPlaceholder">
                             <i class="ph ph-camera text-3xl text-gray-300 block mb-1"></i>
                             <p class="text-sm text-gray-400">Klik untuk foto barang</p>
+                            <p class="text-xs text-gray-300 mt-1">JPG, PNG, WEBP - Maks 5MB</p>
                         </div>
                         <input type="file" id="deliveryPhotoInput" name="delivery_photo"
                             accept="image/*" class="hidden"
@@ -155,13 +175,13 @@
                 </div>
             </form>
         </div>
-    </div>`
-</div>
+    </div>
 
 @endsection
 
+@push('scripts')
 <script>
-    function openDeliveryModal(id) {
+function openDeliveryModal(id) {
     document.getElementById('deliveryForm').action = `/admin/stock-requests/${id}/confirm-delivery`;
     document.getElementById('deliveryModal').classList.remove('hidden');
 }
@@ -180,3 +200,4 @@ function previewDeliveryPhoto(input) {
     }
 }
 </script>
+@endpush

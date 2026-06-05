@@ -104,11 +104,11 @@
             @foreach($criticalStocks as $stock)
             <div class="flex items-center justify-between p-3 bg-red-50 rounded-2xl">
                 <div>
-                    <p class="text-sm font-semibold text-gray-800">{{ $stock->menu->name }}</p>
-                    <p class="text-xs text-gray-500">{{ ucfirst($stock->menu->category) }}</p>
+                    <p class="text-sm font-semibold text-gray-800">{{ $stock['name'] }}</p>
+                    <p class="text-xs text-gray-500">{{ ucfirst($stock['category']) }} - {{ $stock['status'] }}</p>
                 </div>
                 <span class="text-sm font-bold text-red-600">
-                    {{ $stock->stock }} sisa
+                    {{ number_format($stock['remaining'], 0, ',', '.') }} {{ $stock['unit'] }}
                 </span>
             </div>
             @endforeach
