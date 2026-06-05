@@ -43,11 +43,39 @@
             @include('components.kasir.navbar')
 
             <section class="flex-1 overflow-y-auto px-4 pb-6 pt-0 md:px-8 md:pb-8 hide-scrollbar">
+                @if(session('error'))
+                    <div class="mb-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-red-700">
+                        <i class="ph-fill ph-x-circle mt-0.5 text-xl"></i>
+                        <div class="text-sm font-medium">{{ session('error') }}</div>
+                    </div>
+                @endif
+
+                @if($errors->any())
+                    <div class="mb-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-red-700">
+                        <i class="ph-fill ph-warning-circle mt-0.5 text-xl"></i>
+                        <div>
+                            <p class="text-sm font-semibold">Data belum bisa diproses.</p>
+                            <ul class="mt-1 list-disc pl-4 text-sm">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                @endif
+
                 @yield('content')
             </section>
         </main>
     </div>
 
+    <script>
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    </script>
     @stack('scripts')
 </body>
 </html>
