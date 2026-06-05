@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\BranchStock;
+use App\Models\IngredientStock;
 use App\Models\Promotion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class TransactionController extends Controller
 {
@@ -31,16 +33,19 @@ class TransactionController extends Controller
             ->get()
             ->filter(function (BranchStock $bs) use ($branchId) {
                 $menu = $bs->menu;
-
                 if ($menu->isQuantityBased()) {
                     $bs->available_portions = (int) $bs->stock;
-                    return $bs->stock > 0;
+                    $bs->is_out_of_stock    = $bs->stock <= 0;
+                    return true; // tetap tampilkan
                 }
-
                 $bs->available_portions = (int) $menu->availablePortions($branchId);
-                return $bs->available_portions > 0;
+                $bs->is_out_of_stock    = $bs->available_portions <= 0;
+                return true; // tetap tampilkan
             })
             ->values();
+
+        $ingredientStocks = IngredientStock::where('branch_id', $branchId)
+            ->pluck('stok_sekarang', 'ingredient_id');
 
         // Promo aktif (global + cabang)
         $promotions = Promotion::where('is_active', true)
@@ -52,21 +57,30 @@ class TransactionController extends Controller
                                })
                                ->get();
 
-        // Riwayat transaksi hari ini
+        // Riwayat transaksi terbaru
         $todayTransactions = Transaction::where('branch_id', $branchId)
-                                         ->whereDate('created_at', today())
                                          ->with('items')
                                          ->latest()
+                                         ->limit(50)
                                          ->get();
 
         return view('kasir.transactions.index',
-            compact('stocks', 'promotions', 'todayTransactions'));
+            compact('stocks', 'promotions', 'todayTransactions', 'ingredientStocks'));
     }
 
     // ── Proses transaksi ──────────────────────────────────────────────────────
 
     public function store(Request $request)
     {
+        if (!$request->expectsJson() && $request->isJson()) {
+            $request->headers->set('Accept', 'application/json');
+        }
+
+        // Normalisasi payment_method
+        $request->merge([
+            'payment_method' => strtolower($request->input('payment_method', 'cash')),
+        ]);
+
         $request->validate([
             'items'                 => 'required|array|min:1',
             'items.*.menu_stock_id' => 'required|exists:branch_stocks,id',
@@ -82,17 +96,33 @@ class TransactionController extends Controller
             DB::transaction(function () use ($request, $branchId, &$transactionResult) {
                 $subtotal  = 0;
                 $itemsData = [];
+                $itemQuantities = collect($request->items)
+                    ->groupBy('menu_stock_id')
+                    ->map(fn ($items) => (int) $items->sum('quantity'))
+                    ->sortKeys();
 
-                foreach ($request->items as $item) {
-                    $branchStock = BranchStock::with(['menu.ingredients.ingredient'])
-                        ->findOrFail($item['menu_stock_id']);
+                $branchStocks = BranchStock::where('branch_id', $branchId)
+                    ->whereIn('id', $itemQuantities->keys())
+                    ->lockForUpdate()
+                    ->get()
+                    ->load(['menu.ingredients.ingredient'])
+                    ->keyBy('id');
 
-                    if ((int) $branchStock->branch_id !== (int) $branchId) {
+                if ($branchStocks->count() !== $itemQuantities->count()) {
+                    throw new \Exception('Menu tidak tersedia untuk cabang ini.');
+                }
+
+                $ingredientNeeds = [];
+                $ingredientMeta  = [];
+
+                foreach ($itemQuantities as $menuStockId => $qty) {
+                    $branchStock = $branchStocks->get($menuStockId);
+
+                    if (! $branchStock || ! $branchStock->menu) {
                         throw new \Exception('Menu tidak tersedia untuk cabang ini.');
                     }
 
                     $menu = $branchStock->menu;
-                    $qty  = $item['quantity'];
 
                     // ── Cek ketersediaan stok ──────────────────────────────
                     if ($menu->isQuantityBased()) {
@@ -104,14 +134,19 @@ class TransactionController extends Controller
                         }
                     } else {
                         // Minuman → cek bahan baku
-                        $check = $menu->checkIngredients($branchId, $qty);
-                        if (!$check['ok']) {
-                            $detail = collect($check['kekurangan'])
-                                ->map(fn($k) => "{$k['bahan']}: butuh {$k['dibutuhkan']} {$k['satuan']}, tersedia {$k['tersedia']} {$k['satuan']}")
-                                ->implode('; ');
-                            throw new \Exception(
-                                "Bahan baku {$menu->name} tidak cukup! {$detail}"
-                            );
+                        if ($menu->ingredients->isEmpty()) {
+                            throw new \Exception("Resep bahan baku {$menu->name} belum diatur.");
+                        }
+
+                        foreach ($menu->ingredients as $menuIngredient) {
+                            $ingredientId = $menuIngredient->ingredient_id;
+                            $needed = (float) $menuIngredient->jumlah_per_sajian * $qty;
+
+                            $ingredientNeeds[$ingredientId] = ($ingredientNeeds[$ingredientId] ?? 0) + $needed;
+                            $ingredientMeta[$ingredientId] = [
+                                'bahan' => $menuIngredient->ingredient?->nama_bahan ?? 'Bahan baku',
+                                'satuan' => $menuIngredient->ingredient?->satuan ?? '',
+                            ];
                         }
                     }
 
@@ -129,12 +164,48 @@ class TransactionController extends Controller
                 }
 
                 // ── Promo ─────────────────────────────────────────────────
+                $ingredientStocks = collect();
+                if (! empty($ingredientNeeds)) {
+                    $ingredientStocks = IngredientStock::where('branch_id', $branchId)
+                        ->whereIn('ingredient_id', array_keys($ingredientNeeds))
+                        ->lockForUpdate()
+                        ->get()
+                        ->keyBy('ingredient_id');
+
+                    $shortages = [];
+                    foreach ($ingredientNeeds as $ingredientId => $needed) {
+                        $stock = $ingredientStocks->get($ingredientId);
+                        $available = (float) ($stock?->stok_sekarang ?? 0);
+
+                        if (! $stock || $available < $needed) {
+                            $meta = $ingredientMeta[$ingredientId];
+                            $shortages[] = "{$meta['bahan']}: butuh {$needed} {$meta['satuan']}, tersedia {$available} {$meta['satuan']}";
+                        }
+                    }
+
+                    if (! empty($shortages)) {
+                        throw new \Exception('Bahan baku tidak cukup! ' . implode('; ', $shortages));
+                    }
+                }
+
                 $discountAmount = 0;
                 $promotionId    = null;
 
                 if ($request->promotion_id) {
                     $promo = Promotion::find($request->promotion_id);
-                    if ($promo && $promo->is_valid) {
+                    if ($promo) {
+                        if (!$promo->is_valid) {
+                            throw new \Exception('Promo sudah tidak berlaku atau telah berakhir.');
+                        }
+
+                        // Cek minimum pembelian jika kolom ada
+                        if (!empty($promo->min_purchase) && $subtotal < $promo->min_purchase) {
+                            throw new \Exception(
+                                'Pembelian tidak memenuhi syarat promo ini. Minimum pembelian Rp ' .
+                                number_format($promo->min_purchase, 0, ',', '.') . '.'
+                            );
+                        }
+
                         $discountAmount = $promo->calculateDiscount($subtotal);
                         $promotionId    = $promo->id;
                     }
@@ -144,7 +215,7 @@ class TransactionController extends Controller
                 $invoiceNumber = 'INV-' . now()->format('Ymd') . '-' .
                     str_pad(Transaction::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
 
-                $transaction = Transaction::create([
+                $transactionPayload = [
                     'invoice_number'  => $invoiceNumber,
                     'branch_id'       => $branchId,
                     'kasir_id'        => auth()->id(),
@@ -154,7 +225,13 @@ class TransactionController extends Controller
                     'total'           => $total,
                     'payment_method'  => $request->payment_method,
                     'status'          => 'completed',
-                ]);
+                ];
+
+                if (Schema::hasColumn('transactions', 'kasir_nama_display')) {
+                    $transactionPayload['kasir_nama_display'] = session('kasir_nama', auth()->user()->name);
+                }
+
+                $transaction = Transaction::create($transactionPayload);
 
                 foreach ($itemsData as $itemData) {
                     TransactionItem::create([
@@ -166,16 +243,16 @@ class TransactionController extends Controller
                         'subtotal'       => $itemData['subtotal'],
                     ]);
 
-                    $menu = $itemData['menu'];
-                    $qty  = $itemData['quantity'];
-
-                    if ($menu->isQuantityBased()) {
-                        // Makanan/snack: kurangi stok pcs
-                        $itemData['branch_stock']->decrement('stock', $qty);
-                    } else {
-                        // Minuman: kurangi bahan baku
-                        $menu->deductIngredients($branchId, $qty);
+                    if ($itemData['menu']->isQuantityBased()) {
+                        $itemData['branch_stock']->stock = (float) $itemData['branch_stock']->stock - $itemData['quantity'];
+                        $itemData['branch_stock']->save();
                     }
+                }
+
+                foreach ($ingredientNeeds as $ingredientId => $needed) {
+                    $stock = $ingredientStocks->get($ingredientId);
+                    $stock->stok_sekarang = (float) $stock->stok_sekarang - $needed;
+                    $stock->save();
                 }
 
                 $transactionResult = $transaction;
@@ -223,10 +300,10 @@ class TransactionController extends Controller
             ], 422);
         }
 
-        if ($transaction->created_at->diffInMinutes(now()) > 30) {
+        if ($transaction->created_at->diffInMinutes(now()) > 60) {
             return response()->json([
                 'success' => false,
-                'message' => 'Batas waktu pembatalan (30 menit) telah lewat!',
+                'message' => 'Batas waktu pembatalan (1 jam) telah lewat!',
             ], 422);
         }
 
