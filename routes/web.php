@@ -22,30 +22,38 @@ use App\Http\Controllers\Admin\ReportController as AdminReport;
 use App\Http\Controllers\Manager\TransactionController as ManagerTransaction;
 use App\Http\Controllers\Kasir\ShiftController;
 use App\Http\Controllers\Admin\ShiftScheduleController;
+use App\Http\Controllers\Admin\KasirController;
 
 Route::get('/', function () {
     if (!auth()->check()) return redirect('/login');
 
     return match(auth()->user()->role) {
-        'manager' => redirect('/manager/dashboard'),
-        'admin'   => redirect('/admin/dashboard'),
-        'kasir'   => redirect('/kasir/transactions'),
+        'manager' => redirect()->route('manager.dashboard'),
+        'admin'   => redirect()->route('admin.dashboard'),
+        'kasir'   => redirect()->route('kasir.transactions.index'),
         default   => redirect('/login'),
     };
-});
+})->middleware('no-cache');
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+    if (!auth()->check()) return redirect('/login');
 
-Route::middleware('auth')->group(function () {
+    return match(auth()->user()->role) {
+        'manager' => redirect()->route('manager.dashboard'),
+        'admin'   => redirect()->route('admin.dashboard'),
+        'kasir'   => redirect()->route('kasir.transactions.index'),
+        default   => redirect('/login'),
+    };
+})->middleware(['auth', 'verified', 'no-cache'])->name('dashboard');
+
+Route::middleware(['auth', 'no-cache'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 // ── MANAGER ──────────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'role:manager'])
+Route::middleware(['auth', 'role:manager', 'no-cache'])
     ->prefix('manager')
     ->name('manager.')
     ->group(function () {
@@ -57,6 +65,8 @@ Route::middleware(['auth', 'role:manager'])
              ->name('branches.restore');
         Route::post('branches/{branch}/add-kasir', [BranchController::class, 'addKasir'])
             ->name('branches.add-kasir');
+        Route::post('branches/{branch}/deactivate', [BranchController::class, 'deactivate'])
+            ->name('branches.deactivate');
 
         // Menu
         Route::resource('menus', MenuController::class)->except(['show']);
@@ -95,10 +105,11 @@ Route::middleware(['auth', 'role:manager'])
         // Reports & Transactions
         Route::get('reports', [ManagerReport::class, 'index'])->name('reports.index');
         Route::get('transactions', [ManagerTransaction::class, 'index'])->name('transactions.index');
+        Route::get('reports/export', [ManagerReport::class, 'export'])->name('reports.export');
     });
 
 // ── ADMIN (Admin Cabang) ──────────────────────────────────────────────────────
-Route::middleware(['auth', 'role:admin'])
+Route::middleware(['auth', 'role:admin', 'no-cache'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
@@ -136,10 +147,13 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('shifts', [ShiftScheduleController::class, 'index'])->name('shifts.index');
         Route::post('shifts', [ShiftScheduleController::class, 'store'])->name('shifts.store');
         Route::delete('shifts/{shiftSchedule}', [ShiftScheduleController::class, 'destroy'])->name('shifts.destroy');
+
+        Route::get('kasirs', [KasirController::class, 'index'])->name('kasirs.index');
+        Route::post('kasirs', [KasirController::class, 'store'])->name('kasirs.store');
     });
 
 // ── KASIR ─────────────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'role:kasir'])
+Route::middleware(['auth', 'role:kasir', 'no-cache'])
     ->prefix('kasir')
     ->name('kasir.')
     ->group(function () {
@@ -153,9 +167,11 @@ Route::middleware(['auth', 'role:kasir'])
              ->name('transactions.request-cancel');
 
         // Shifts
-        Route::get('shifts', [ShiftController::class, 'index'])->name('shifts.index');
-        Route::post('shifts/clock-in', [ShiftController::class, 'clockIn'])->name('shifts.clock-in');
-        Route::post('shifts/{shift}/clock-out', [ShiftController::class, 'clockOut'])->name('shifts.clock-out');
+        Route::post('set-nama', function(\Illuminate\Http\Request $req) {
+            $req->validate(['kasir_nama' => 'required|string|max:100']);
+            session(['kasir_nama' => $req->kasir_nama]);
+            return back();
+        })->name('set-nama');
     });
 
 require __DIR__ . '/auth.php';
