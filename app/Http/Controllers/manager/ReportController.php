@@ -111,4 +111,76 @@ class ReportController extends Controller
             'branchPerformance', 'transactions'
         ));
     }
+
+    public function export(Request $request)
+    {
+        $month    = $request->get('month', now()->month);
+        $year     = $request->get('year', now()->year);
+        $branchId = $request->get('branch_id');
+
+        $transactions = \App\Models\Transaction::with('branch', 'kasir', 'items')
+            ->where('status', 'completed')
+            ->whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+            ->get();
+
+        $expenses = \App\Models\Expense::with('branch', 'createdBy')
+            ->where('status', 'verified')
+            ->whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+            ->get();
+
+        $monthName = \DateTime::createFromFormat('!m', $month)->format('F');
+        $filename  = "Laporan_{$monthName}_{$year}.csv";
+
+        $headers = [
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ];
+
+        $callback = function () use ($transactions, $expenses, $monthName, $year) {
+            $file = fopen('php://output', 'w');
+
+            // Header laporan
+            fputcsv($file, ["LAPORAN KEUANGAN - {$monthName} {$year}"]);
+            fputcsv($file, []);
+
+            // Pemasukan
+            fputcsv($file, ['=== PEMASUKAN (TRANSAKSI) ===']);
+            fputcsv($file, ['Invoice', 'Cabang', 'Kasir', 'Total', 'Metode', 'Tanggal']);
+            foreach ($transactions as $t) {
+                fputcsv($file, [
+                    $t->invoice_number,
+                    $t->branch?->name ?? '-',
+                    $t->kasir?->name ?? '-',
+                    $t->total,
+                    $t->payment_method,
+                    $t->created_at->format('d/m/Y H:i'),
+                ]);
+            }
+            fputcsv($file, ['', '', '', 'TOTAL', $transactions->sum('total'), '']);
+            fputcsv($file, []);
+
+            // Pengeluaran
+            fputcsv($file, ['=== PENGELUARAN ===']);
+            fputcsv($file, ['Judul', 'Cabang', 'Kategori', 'Jumlah', 'Diajukan Oleh', 'Tanggal']);
+            foreach ($expenses as $e) {
+                fputcsv($file, [
+                    $e->title,
+                    $e->branch?->name ?? '-',
+                    $e->category,
+                    $e->amount,
+                    $e->createdBy?->name ?? '-',
+                    $e->created_at->format('d/m/Y'),
+                ]);
+            }
+            fputcsv($file, ['', '', '', 'TOTAL', $expenses->sum('amount'), '']);
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

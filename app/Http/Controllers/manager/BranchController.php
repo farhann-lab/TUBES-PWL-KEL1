@@ -7,6 +7,7 @@ use App\Models\Branch;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class BranchController extends Controller
 {
@@ -18,7 +19,10 @@ class BranchController extends Controller
 
     public function create()
     {
-        return view('manager.branches.create');
+        $ingredients  = \App\Models\Ingredient::orderBy('nama_bahan')->get();
+        $menusMakanan = \App\Models\Menu::whereIn('category', ['makanan', 'snack'])
+                                        ->where('is_available', true)->get();
+        return view('manager.branches.create', compact('ingredients', 'menusMakanan'));
     }
 
     public function store(Request $request)
@@ -56,15 +60,34 @@ class BranchController extends Controller
             'branch_id' => $branch->id,
         ]);
 
+        DB::transaction(function () use ($request, $branch) {
+            // Stok bahan baku
+            foreach ($request->stok_bahan ?? [] as $ingId => $jumlah) {
+                if ($jumlah > 0) {
+                    \App\Models\IngredientStock::updateOrCreate(
+                        ['branch_id' => $branch->id, 'ingredient_id' => $ingId],
+                        ['stok_sekarang' => $jumlah, 'stok_minimum' => 0]
+                    );
+                }
+            }
+            // Stok makanan/snack
+            foreach ($request->stok_makanan ?? [] as $menuId => $pcs) {
+                if ($pcs > 0) {
+                    \App\Models\BranchStock::updateOrCreate(
+                        ['branch_id' => $branch->id, 'menu_id' => $menuId],
+                        ['stock' => $pcs]
+                    );
+                }
+            }
+        });
         return redirect()->route('manager.branches.index')
-                         ->with('success', "Cabang {$branch->name} dan akun admin berhasil dibuat!");
+            ->with('success', 'Cabang ' . $branch->name . ' berhasil dibuka dan akun admin telah dibuat!');;
     }
 
     public function edit(Branch $branch)
     {
         $admins = User::where('branch_id', $branch->id)->where('role', 'admin')->get();
-        $kasirs = User::where('branch_id', $branch->id)->where('role', 'kasir')->get();
-        return view('manager.branches.edit', compact('branch', 'admins', 'kasirs'));
+        return view('manager.branches.edit', compact('branch', 'admins'));
     }
 
     public function update(Request $request, Branch $branch)
@@ -84,9 +107,27 @@ class BranchController extends Controller
 
     public function destroy(Branch $branch)
     {
-        $branch->delete();
+        DB::transaction(function () use ($branch) {
+            $userIds = User::where('branch_id', $branch->id)->pluck('id');
+
+            \App\Models\Promotion::where('branch_id', $branch->id)
+                ->orWhereIn('created_by', $userIds)
+                ->delete();
+
+            $branch->forceDelete();
+
+            User::whereIn('id', $userIds)->delete();
+        });
+
         return redirect()->route('manager.branches.index')
-                         ->with('success', 'Cabang berhasil dinonaktifkan!');
+                        ->with('success', 'Cabang dan semua akun terkait berhasil dihapus permanen!');
+    }
+
+    public function deactivate(Branch $branch)
+    {
+        $branch->update(['status' => 'inactive']);
+        return redirect()->route('manager.branches.index')
+                        ->with('success', 'Cabang berhasil dinonaktifkan sementara!');
     }
 
     public function restore($id)

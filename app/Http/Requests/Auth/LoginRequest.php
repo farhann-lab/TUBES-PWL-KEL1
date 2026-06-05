@@ -49,6 +49,16 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        // Cek apakah akun aktif setelah berhasil login
+        if (! Auth::user()->is_active) {
+            Auth::logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'Akun ini telah dinonaktifkan. Hubungi Manager.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

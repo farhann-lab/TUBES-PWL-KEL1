@@ -12,6 +12,7 @@ use App\Models\MenuIngredient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class MenuController extends Controller
 {
@@ -37,14 +38,16 @@ class MenuController extends Controller
             'description'                  => 'nullable|string',
             'category'                     => 'required|in:minuman,makanan,snack',
             'base_price'                   => 'required|numeric|min:0',
-            'image'                        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image'                        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             // Resep — wajib jika kategori minuman
-            'ingredients'                  => 'required_if:category,minuman|array',
-            'ingredients.*.ingredient_id'  => 'required_if:category,minuman|exists:ingredients,id',
-            'ingredients.*.jumlah'         => 'required_if:category,minuman|numeric|min:0.001',
+            'ingredients'                  => 'nullable|array',
+            'ingredients.*.ingredient_id'  => 'nullable|exists:ingredients,id',
+            'ingredients.*.jumlah'         => 'nullable|numeric|min:0.001',
             // Stok awal untuk makanan/snack
             'stok_awal'                    => 'nullable|integer|min:0',
         ]);
+
+        $ingredientRows = $this->validatedIngredientRows($request);
 
         // Tentukan stock_type otomatis dari kategori
         $stockType = ($request->category === 'minuman') ? 'bahan_baku' : 'kuantitas_jadi';
@@ -55,7 +58,7 @@ class MenuController extends Controller
             $imagePath = $request->file('image')->store('menus', 'public');
         }
 
-        DB::transaction(function () use ($request, $stockType, $imagePath) {
+        DB::transaction(function () use ($request, $stockType, $imagePath, $ingredientRows) {
             // 1. Buat menu
             $menu = Menu::create([
                 'name'         => $request->name,
@@ -71,14 +74,12 @@ class MenuController extends Controller
 
             if ($stockType === 'bahan_baku') {
                 // 2a. Minuman: simpan resep (menu_ingredients)
-                foreach ($request->ingredients ?? [] as $ing) {
-                    if (!empty($ing['ingredient_id']) && !empty($ing['jumlah'])) {
-                        MenuIngredient::create([
-                            'menu_id'          => $menu->id,
-                            'ingredient_id'    => $ing['ingredient_id'],
-                            'jumlah_per_sajian' => $ing['jumlah'],
-                        ]);
-                    }
+                foreach ($ingredientRows as $ing) {
+                    MenuIngredient::create([
+                        'menu_id'             => $menu->id,
+                        'ingredient_id'       => $ing['ingredient_id'],
+                        'jumlah_per_sajian'   => $ing['jumlah'],
+                    ]);
                 }
 
                 // 2b. Buat branch_stock dengan stock = 0 (stok dikontrol via bahan baku)
@@ -91,8 +92,7 @@ class MenuController extends Controller
                     ]);
 
                     // Pastikan ingredient_stock ada untuk semua bahan di cabang ini
-                    foreach ($request->ingredients ?? [] as $ing) {
-                        if (empty($ing['ingredient_id'])) continue;
+                    foreach ($ingredientRows as $ing) {
                         IngredientStock::firstOrCreate(
                             ['branch_id' => $branch->id, 'ingredient_id' => $ing['ingredient_id']],
                             ['stok_sekarang' => 0, 'stok_minimum' => 0]
@@ -136,13 +136,14 @@ class MenuController extends Controller
             'description'                  => 'nullable|string',
             'category'                     => 'required|in:minuman,makanan,snack',
             'base_price'                   => 'required|numeric|min:0',
-            'image'                        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image'                        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'is_available'                 => 'boolean',
-            'ingredients'                  => 'required_if:category,minuman|array',
-            'ingredients.*.ingredient_id'  => 'required_if:category,minuman|exists:ingredients,id',
-            'ingredients.*.jumlah'         => 'required_if:category,minuman|numeric|min:0.001',
+            'ingredients'                  => 'nullable|array',
+            'ingredients.*.ingredient_id'  => 'nullable|exists:ingredients,id',
+            'ingredients.*.jumlah'         => 'nullable|numeric|min:0.001',
         ]);
 
+        $ingredientRows = $this->validatedIngredientRows($request);
         $stockType = ($request->category === 'minuman') ? 'bahan_baku' : 'kuantitas_jadi';
 
         if ($request->hasFile('image')) {
@@ -152,7 +153,7 @@ class MenuController extends Controller
             $menu->image = $request->file('image')->store('menus', 'public');
         }
 
-        DB::transaction(function () use ($request, $menu, $stockType) {
+        DB::transaction(function () use ($request, $menu, $stockType, $ingredientRows) {
             $menu->update([
                 'name'         => $request->name,
                 'description'  => $request->description,
@@ -163,19 +164,16 @@ class MenuController extends Controller
                 'is_available' => $request->has('is_available'),
             ]);
 
-            // Update resep jika minuman
-            if ($stockType === 'bahan_baku') {
-                // Hapus resep lama, ganti dengan yang baru
-                $menu->ingredients()->delete();
+            // Update resep sesuai kategori
+            $menu->ingredients()->delete();
 
-                foreach ($request->ingredients ?? [] as $ing) {
-                    if (!empty($ing['ingredient_id']) && !empty($ing['jumlah'])) {
-                        MenuIngredient::create([
-                            'menu_id'           => $menu->id,
-                            'ingredient_id'     => $ing['ingredient_id'],
-                            'jumlah_per_sajian' => $ing['jumlah'],
-                        ]);
-                    }
+            if ($stockType === 'bahan_baku') {
+                foreach ($ingredientRows as $ing) {
+                    MenuIngredient::create([
+                        'menu_id'           => $menu->id,
+                        'ingredient_id'     => $ing['ingredient_id'],
+                        'jumlah_per_sajian' => $ing['jumlah'],
+                    ]);
                 }
             }
         });
@@ -249,5 +247,45 @@ class MenuController extends Controller
 
         return redirect()->route('manager.menus.ingredients')
                          ->with('success', 'Bahan baku berhasil diperbarui!');
+    }
+
+    private function validatedIngredientRows(Request $request): array
+    {
+        if ($request->category !== 'minuman') {
+            return [];
+        }
+
+        $rows = collect($request->input('ingredients', []))
+            ->filter(fn ($row) => filled($row['ingredient_id'] ?? null) || filled($row['jumlah'] ?? null))
+            ->values();
+
+        if ($rows->isEmpty()) {
+            throw ValidationException::withMessages([
+                'ingredients' => 'Menu minuman wajib memiliki minimal satu bahan baku.',
+            ]);
+        }
+
+        $completeRows = $rows->filter(
+            fn ($row) => filled($row['ingredient_id'] ?? null) && filled($row['jumlah'] ?? null)
+        );
+
+        if ($completeRows->count() !== $rows->count()) {
+            throw ValidationException::withMessages([
+                'ingredients' => 'Setiap baris bahan baku harus berisi nama bahan dan jumlah.',
+            ]);
+        }
+
+        if ($completeRows->pluck('ingredient_id')->duplicates()->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'ingredients' => 'Bahan baku yang sama tidak boleh dipilih lebih dari satu kali.',
+            ]);
+        }
+
+        return $completeRows
+            ->map(fn ($row) => [
+                'ingredient_id' => (int) $row['ingredient_id'],
+                'jumlah'        => (float) $row['jumlah'],
+            ])
+            ->all();
     }
 }

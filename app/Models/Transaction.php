@@ -8,6 +8,7 @@ class Transaction extends Model
 {
     protected $fillable = [
         'invoice_number', 'branch_id', 'kasir_id',
+        'kasir_nama_display',
         'promotion_id', 'subtotal', 'discount_amount',
         'total', 'payment_method', 'status',
         'cancel_reason', 'cancelled_by', 'cancelled_at'
