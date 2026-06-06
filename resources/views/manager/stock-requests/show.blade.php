@@ -65,6 +65,34 @@
             </div>
             @endif
 
+            @if($stockRequest->delivery_note || $stockRequest->delivery_photo)
+            <div class="rounded-2xl bg-gray-50 p-4 md:col-span-2">
+                <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div class="min-w-0">
+                        <p class="text-xs text-gray-400 mb-1">Konfirmasi Pengiriman</p>
+                        <p class="text-sm text-gray-700">{{ $stockRequest->delivery_note ?? 'Tidak ada catatan.' }}</p>
+                        @if($stockRequest->delivered_at)
+                            <p class="mt-2 text-xs text-gray-400">
+                                Dikirim {{ $stockRequest->delivered_at->format('d M Y H:i') }}
+                            </p>
+                        @endif
+                    </div>
+
+                    @if($stockRequest->delivery_photo)
+                        <a href="{{ Storage::url($stockRequest->delivery_photo) }}" target="_blank" rel="noopener"
+                           class="group block shrink-0">
+                            <img src="{{ Storage::url($stockRequest->delivery_photo) }}"
+                                 alt="Bukti konfirmasi pengiriman"
+                                 class="h-28 w-28 rounded-2xl border border-gray-200 object-cover smooth-transition group-hover:opacity-85">
+                            <p class="mt-2 text-center text-xs font-semibold text-elco-coffee group-hover:underline">
+                                Buka Foto
+                            </p>
+                        </a>
+                    @endif
+                </div>
+            </div>
+            @endif
+
             @if($stockRequest->rejection_note)
             <div class="rounded-2xl bg-red-50 p-4 md:col-span-2">
                 <p class="text-xs text-red-400 mb-1">Alasan Penolakan</p>
