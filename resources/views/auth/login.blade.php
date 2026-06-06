@@ -197,13 +197,13 @@
             <div class="w-5/12 flex flex-col items-center justify-center">
 
                 <!-- ELCO Logo -->
-                <div class="self-end mb-8 opacity-0 animate-fade-in" style="animation-delay:0.1s; animation-fill-mode:forwards;">
+                <div class=" mb-8 opacity-0 animate-fade-in" style="animation-delay:0.1s; animation-fill-mode:forwards;">
                     <div class="flex items-center gap-3">
                          <img 
-    src="{{ asset('image/logo-elco.png') }}" 
-    alt="Logo ELCO"
-    class="w-[34px] h-[34px] object-contain scale-[1.2]] -mr-1"
-        />
+                        src="{{ asset('image/logo-elco.png') }}" 
+                        alt="Logo ELCO"
+                        class="w-[34px] h-[34px] object-contain scale-[1.2]] -mr-1"
+                            />
                         <span class="font-display text-coffee-dark font-bold tracking-widest"
                               style="font-size:1.8rem; letter-spacing:0.15em;">ELCO.</span>
                     </div>
