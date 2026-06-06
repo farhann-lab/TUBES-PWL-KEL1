@@ -245,32 +245,48 @@
                     </div>
 
                     <!-- Password Field -->
-                    <div class="field-wrap opacity-0 animate-slide-up"
-                         style="animation-delay:0.45s; animation-fill-mode:forwards;">
-                        <span class="field-label">Password</span>
-                        <div class="field-inner flex items-center gap-2">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="flex-shrink-0 opacity-40">
-                                <rect x="5" y="11" width="14" height="10" rx="2" stroke="#B8860B" stroke-width="2"/>
-                                <path d="M8 11V7a4 4 0 1 1 8 0v4" stroke="#B8860B" stroke-width="2"/>
-                            </svg>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                placeholder="Password123"
-                                autocomplete="current-password"
-                                required
-                            />
-                            <img
-                                src="{{ asset('image/eye-show.png') }}"
-                                id="toggle-pw-img"
-                                class="flex-shrink-0 cursor-pointer opacity-75 hover:opacity-100 transition-opacity"
-                                onclick="togglePassword()"
-                                alt="Toggle Password"
-                                style="width: 28px; height: 28px; object-fit: contain;"
-                            />
-                        </div>
+                    <!-- Password Field -->
+                <div class="field-wrap opacity-0 animate-slide-up"
+                     style="animation-delay:0.45s; animation-fill-mode:forwards;">
+                    <span class="field-label">Password</span>
+                    <div class="field-inner flex items-center gap-2">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="flex-shrink-0 opacity-40">
+                            <rect x="5" y="11" width="14" height="10" rx="2" stroke="#B8860B" stroke-width="2"/>
+                            <path d="M8 11V7a4 4 0 1 1 8 0v4" stroke="#B8860B" stroke-width="2"/>
+                        </svg>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Password123"
+                            autocomplete="current-password"
+                            required
+                        />
+                        <!-- Toggle password: menggunakan image -->
+                        <img
+                            src="{{ asset('image/eye-show.png') }}"
+                            id="toggle-pw-img"
+                            class="flex-shrink-0 cursor-pointer opacity-75 hover:opacity-100 transition-opacity"
+                            onclick="togglePassword()"
+                            alt="Toggle Password"
+                            style="width: 28px; height: 28px; object-fit: contain;"
+                        />
                     </div>
+
+                    <!-- Forgot password — tetap di dalam .field-wrap agar layout rapi -->
+                    <!-- <div class="flex justify-end px-3 pb-2 pt-1">
+                        @if (Route::has('password.request'))
+                        <a href="{{ route('password.request') }}"
+                           class="font-sans text-xs font-semibold text-gold-deep hover:text-coffee-dark transition-colors duration-200 tracking-wide">
+                            Lupa Password?
+                        </a>
+                        @else
+                        <span class="font-sans text-xs font-semibold text-gold-deep tracking-wide cursor-pointer hover:text-coffee-dark transition-colors">
+                            Lupa Password?
+                        </span>
+                        @endif
+                    </div> -->
+                </div>
 
                     <!-- Login Button -->
                     <div class="flex justify-center opacity-0 animate-slide-up"
@@ -733,6 +749,24 @@
 @stack('scripts')
 
 <script>
+
+function togglePassword() {
+            const input = document.getElementById('password');
+            const toggleImg = document.getElementById('toggle-pw-img');
+
+            // Alamat gambar di dalam folder public/image/ Laravel
+            const imgShow = "{{ asset('image/eye-show.png') }}"; // ikon mata → tampilkan password
+            const imgHide = "{{ asset('image/eye-hide.png') }}"; // ikon mata → sembunyikan password
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                toggleImg.src = imgHide;
+            } else {
+                input.type = 'password';
+                toggleImg.src = imgShow;
+            }
+        }
+
 // ── IntersectionObserver for reveal animations ──────────
 document.addEventListener('DOMContentLoaded', () => {
     const revealEls = document.querySelectorAll('.reveal, .reveal-left');
