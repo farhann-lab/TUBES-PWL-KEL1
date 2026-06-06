@@ -130,14 +130,8 @@
             <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50 smooth-transition">
                 <td class="py-4 px-6">
                     <div class="flex items-center gap-3">
-                        @if($stock->menu->image)
-                            <img src="{{ asset('storage/' . ltrim($stock->menu->image, '/')) }}"
-                                 class="w-10 h-10 rounded-xl object-cover">
-                        @else
-                            <div class="w-10 h-10 rounded-xl bg-orange-50 text-orange-400 flex items-center justify-center">
-                                <i class="ph-fill ph-coffee"></i>
-                            </div>
-                        @endif
+                        <img src="{{ $stock->menu->image_url }}"
+                             class="w-12 h-12 rounded-2xl object-cover">
                         <div>
                             <p class="text-sm font-semibold text-gray-800">{{ $stock->menu->name }}</p>
                         </div>

@@ -38,31 +38,44 @@ class StockRequestController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'items'              => 'required|array|min:1',
-            'items.*.item_name'  => 'required|string|max:150',
-            'items.*.quantity'   => 'required|numeric|min:1',
-            'items.*.unit'       => 'nullable|string|max:20',
-            'items.*.tipe'       => 'required|in:bahan_baku,produk_jadi,operasional',
-            'reason'             => 'nullable|string',
+        $type = $request->input('type');
+        $stockItemType = $request->input('stock_item_type');
+
+        $request->merge([
+            'item_name' => match (true) {
+                $type === 'stock' && $stockItemType === 'bahan_baku' => $request->input('item_name_bahan'),
+                $type === 'stock' && $stockItemType === 'produk_jadi' => $request->input('item_name_produk'),
+                $type === 'operational' => $request->input('item_name_ops'),
+                default => $request->input('item_name'),
+            },
+            'unit' => $request->filled('unit')
+                ? $request->input('unit')
+                : ($stockItemType === 'produk_jadi' ? 'pcs' : ($type === 'operational' ? 'unit' : null)),
         ]);
 
-        foreach ($request->items as $item) {
-            StockRequest::create([
-                'branch_id'       => auth()->user()->branch_id,
-                'requested_by'    => auth()->id(),
-                'type'            => $item['tipe'] === 'operasional' ? 'operational' : 'stock',
-                'stock_item_type' => in_array($item['tipe'], ['bahan_baku','produk_jadi']) ? $item['tipe'] : null,
-                'item_name'       => $item['item_name'],
-                'unit'            => $item['unit'] ?? null,
-                'quantity'        => $item['quantity'],
-                'reason'          => $request->reason,
-                'status'          => 'pending',
-            ]);
-        }
+        $validated = $request->validate([
+            'type'            => 'required|in:stock,operational',
+            'stock_item_type' => 'required_if:type,stock|nullable|in:bahan_baku,produk_jadi',
+            'item_name'       => 'required|string|max:150',
+            'quantity'        => 'required|numeric|min:1',
+            'unit'            => 'nullable|string|max:20',
+            'reason'          => 'nullable|string',
+        ]);
+
+        StockRequest::create([
+            'branch_id'       => auth()->user()->branch_id,
+            'requested_by'    => auth()->id(),
+            'type'            => $validated['type'],
+            'stock_item_type' => $validated['type'] === 'stock' ? $validated['stock_item_type'] : null,
+            'item_name'       => $validated['item_name'],
+            'unit'            => $validated['unit'] ?? null,
+            'quantity'        => $validated['quantity'],
+            'reason'          => $validated['reason'] ?? null,
+            'status'          => 'pending',
+        ]);
 
         return redirect()->route('admin.stock-requests.index')
-                        ->with('success', count($request->items) . ' pengajuan berhasil dikirim ke Manager!');
+                        ->with('success', 'Pengajuan berhasil dikirim ke Manager!');
     }
 
     /**

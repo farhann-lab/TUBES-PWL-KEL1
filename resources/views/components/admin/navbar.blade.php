@@ -1,135 +1,123 @@
-<header class="h-24 px-8 flex items-center justify-between z-10">
-    <div>
-        <h1 class="text-2xl font-display font-bold text-elco-coffee">Dashboard Admin</h1>
-        <p class="text-sm text-gray-500 mt-1">{{ now()->translatedFormat('l, j F Y') }}</p>
-    </div>
-
-    <div class="flex items-center gap-6">
-
-        {{-- Bell Notifikasi --}}
-        <div class="relative" id="notifWrapper">
-            <button onclick="toggleNotif()"
-                class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-soft hover:shadow-hover smooth-transition active:scale-95 text-gray-500 hover:text-elco-coffee relative">
-                <i class="ph ph-bell text-lg"></i>
-                @php
-                    $pendingStocks  = \App\Models\StockRequest::where('branch_id', auth()->user()->branch_id)
-                                    ->where('status', 'pending')->latest()->take(3)->get();
-                    $pendingTrx     = \App\Models\Transaction::where('branch_id', auth()->user()->branch_id)
-                                    ->where('status', 'pending')->latest()->take(3)->get();
-                    $cancelRequests = \App\Models\Transaction::where('branch_id', auth()->user()->branch_id)
-                                    ->where('status', 'completed')
-                                    ->where('cancel_reason', 'like', '[REQUEST CANCEL]%')
-                                    ->latest()->take(3)->get();
-                    $pendingCount   = $pendingStocks->count() + $cancelRequests->count();
-                @endphp
-                @if($pendingCount > 0)
-                <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                    {{ $pendingCount > 9 ? '9+' : $pendingCount }}
-                </span>
-                @endif
-            </button>
-
-            {{-- Dropdown Notif --}}
-            <div id="notifDropdown"
-                 class="hidden absolute right-0 top-12 w-80 bg-white rounded-2xl shadow-hover z-50 overflow-hidden border border-gray-100">
-                <div class="p-4 border-b border-gray-100 flex justify-between items-center">
-                    <p class="font-semibold text-sm text-gray-800">Notifikasi</p>
-                    <span class="text-xs text-gray-400">{{ $pendingCount }} belum dibaca</span>
-                </div>
-                <div class="max-h-64 overflow-y-auto">
-                    @php
-                        $pendingStocks  = \App\Models\StockRequest::where('branch_id', auth()->user()->branch_id)
-                                        ->where('status', 'pending')->latest()->take(3)->get();
-                        $pendingTrx     = \App\Models\Transaction::where('branch_id', auth()->user()->branch_id)
-                                        ->where('status', 'pending')->latest()->take(3)->get();
-                        $cancelRequests = \App\Models\Transaction::where('branch_id', auth()->user()->branch_id)
-                                        ->where('status', 'completed')
-                                        ->where('cancel_reason', 'like', '[REQUEST CANCEL]%')
-                                        ->latest()->take(3)->get();
-                        $pendingCount   = $pendingStocks->count() + $cancelRequests->count();
-                    @endphp
-
-                    @forelse($pendingStocks as $req)
-                    <a href="{{ route('admin.stock-requests.index') }}"
-                       class="flex items-center gap-3 p-4 hover:bg-gray-50 smooth-transition border-b border-gray-50">
-                        <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0">
-                            <i class="ph-fill ph-package text-sm"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-800">Pengajuan: {{ $req->item_name }}</p>
-                            <p class="text-xs text-gray-400">{{ $req->created_at->diffForHumans() }}</p>
-                        </div>
-                    </a>
-                    @empty
-                    @endforelse
-
-                    @forelse($cancelRequests as $trx)
-                    <a href="{{ route('admin.transactions.index') }}"
-                    class="flex items-center gap-3 p-4 hover:bg-red-50 smooth-transition border-b border-gray-50">
-                        <div class="w-9 h-9 rounded-xl bg-red-50 text-red-500 flex items-center justify-center flex-shrink-0">
-                            <i class="ph-fill ph-x-circle text-sm"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-800">Minta Batal: {{ $trx->invoice_number }}</p>
-                            <p class="text-xs text-gray-400">{{ $trx->updated_at->diffForHumans() }}</p>
-                        </div>
-                    </a>
-                    @empty
-                    @endforelse
-
-                    @forelse($pendingTrx as $trx)
-                    <a href="{{ route('admin.transactions.index') }}"
-                       class="flex items-center gap-3 p-4 hover:bg-gray-50 smooth-transition border-b border-gray-50">
-                        <div class="w-9 h-9 rounded-xl bg-yellow-50 text-yellow-500 flex items-center justify-center flex-shrink-0">
-                            <i class="ph-fill ph-receipt text-sm"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-800">Transaksi: {{ $trx->invoice_number }}</p>
-                            <p class="text-xs text-gray-400">{{ $trx->created_at->diffForHumans() }}</p>
-                        </div>
-                    </a>
-                    @empty
-                    @endforelse
-
-                    @if($pendingCount === 0)
-                    <div class="py-8 text-center text-gray-400 text-sm">
-                        <i class="ph ph-check-circle text-3xl text-emerald-400 block mb-2"></i>
-                        Tidak ada notifikasi baru
-                    </div>
-                    @endif
-                </div>
-            </div>
+<header class="elco-topbar-shell" aria-label="Topbar admin cabang">
+    <div class="elco-topbar">
+        <div class="elco-topbar-left">
+            <h1 class="elco-topbar-title">@yield('page_title', 'Dashboard')</h1>
+            <p class="elco-topbar-date">{{ now()->translatedFormat('l, j F Y') }}</p>
         </div>
 
-        {{-- Profile Dropdown --}}
-        <div class="relative" id="profileWrapper">
-            <div class="flex items-center gap-3 pl-4 border-l border-gray-200 cursor-pointer group"
-                onclick="toggleProfile()">
-                <div class="w-11 h-11 rounded-full bg-gradient-to-br from-elco-coffee to-elco-mocha flex items-center justify-center text-white font-bold shadow-sm">
-                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+        <div class="elco-topbar-right">
+            @php
+                $branchId = auth()->user()->branch_id;
+                $approvedRequests = \App\Models\StockRequest::where('branch_id', $branchId)
+                    ->where('status', 'approved')
+                    ->whereNull('delivered_at')
+                    ->count();
+                $pendingExpenses = \App\Models\Expense::where('branch_id', $branchId)
+                    ->where('status', 'pending')
+                    ->count();
+                $pendingPromos = \App\Models\Promotion::where('branch_id', $branchId)
+                    ->where('type', 'branch')
+                    ->where('review_status', 'pending')
+                    ->count();
+                $notifCount = $approvedRequests + $pendingExpenses + $pendingPromos;
+            @endphp
+
+            <div class="relative" id="adminNotifWrapper">
+                <button onclick="toggleAdminNotif()" class="elco-topbar-icon-btn" aria-label="Notifikasi" title="Notifikasi">
+                    <i class="ph ph-bell"></i>
+                    @if($notifCount > 0)
+                        <span class="elco-topbar-badge">{{ $notifCount > 9 ? '9+' : $notifCount }}</span>
+                    @endif
+                </button>
+
+                <div id="adminNotifDropdown" class="elco-topbar-dropdown hidden">
+                    <div class="elco-topbar-dropdown-header">
+                        <p>Notifikasi</p>
+                        <span>{{ $notifCount }} item</span>
+                    </div>
+                    <div class="elco-topbar-dropdown-body">
+                        @if($approvedRequests > 0)
+                            <a href="{{ route('admin.stock-requests.index') }}" class="elco-topbar-notif-item">
+                                <div class="elco-topbar-notif-icon" style="background:rgba(45,212,191,0.15);color:#5eead4;">
+                                    <i class="ph-fill ph-package"></i>
+                                </div>
+                                <div>
+                                    <p>{{ $approvedRequests }} Pengajuan Disetujui</p>
+                                    <span>Menunggu konfirmasi barang sampai</span>
+                                </div>
+                                <span class="elco-topbar-notif-count" style="background:rgba(45,212,191,0.18);color:#99f6e4;">{{ $approvedRequests }}</span>
+                            </a>
+                        @endif
+
+                        @if($pendingExpenses > 0)
+                            <a href="{{ route('admin.expenses.index') }}" class="elco-topbar-notif-item">
+                                <div class="elco-topbar-notif-icon" style="background:rgba(240,181,109,0.15);color:#fbbf24;">
+                                    <i class="ph-fill ph-receipt"></i>
+                                </div>
+                                <div>
+                                    <p>{{ $pendingExpenses }} Pengeluaran Pending</p>
+                                    <span>Menunggu verifikasi manager</span>
+                                </div>
+                                <span class="elco-topbar-notif-count" style="background:rgba(240,181,109,0.18);color:#fcd34d;">{{ $pendingExpenses }}</span>
+                            </a>
+                        @endif
+
+                        @if($pendingPromos > 0)
+                            <a href="{{ route('admin.promotions.index') }}" class="elco-topbar-notif-item">
+                                <div class="elco-topbar-notif-icon" style="background:rgba(239,99,88,0.15);color:#f87171;">
+                                    <i class="ph-fill ph-tag"></i>
+                                </div>
+                                <div>
+                                    <p>{{ $pendingPromos }} Promo Pending</p>
+                                    <span>Menunggu tinjauan manager</span>
+                                </div>
+                                <span class="elco-topbar-notif-count" style="background:rgba(239,99,88,0.18);color:#fca5a5;">{{ $pendingPromos }}</span>
+                            </a>
+                        @endif
+
+                        @if($notifCount === 0)
+                            <div class="elco-topbar-notif-empty">
+                                <i class="ph ph-check-circle"></i>
+                                <p>Semua sudah rapi.</p>
+                            </div>
+                        @endif
+                    </div>
                 </div>
-                <div class="hidden md:block text-right">
-                    <p class="text-sm font-semibold text-gray-800">{{ auth()->user()->name }}</p>
-                    <p class="text-xs text-gray-500">Admin Cabang</p>
-                </div>
-                <i class="ph ph-caret-down text-gray-400"></i>
             </div>
-            <div id="profileDropdown"
-                class="hidden absolute right-0 top-14 w-52 bg-white rounded-2xl shadow-hover z-50 overflow-hidden border border-gray-100 py-1">
-                <div class="px-4 py-3 border-b border-gray-100">
-                    <p class="text-sm font-semibold text-gray-800">{{ auth()->user()->name }}</p>
-                    <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
-                </div>
-                <a href="{{ route('profile.edit') }}"
-                class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 smooth-transition">
-                    <i class="ph ph-user-circle text-gray-400"></i> Edit Profil
-                </a>
-                <div class="border-t border-gray-100 mt-1">
+
+            <div class="elco-topbar-divider"></div>
+
+            <div class="relative" id="profileWrapper">
+                <button class="elco-topbar-profile-pill" onclick="toggleProfile()" aria-label="Profil">
+                    <div class="elco-topbar-avatar">
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    </div>
+                    <div class="elco-topbar-profile-info">
+                        <span class="elco-topbar-profile-name">{{ auth()->user()->name }}</span>
+                        <span class="elco-topbar-profile-role">Admin Cabang</span>
+                    </div>
+                    <i class="ph ph-caret-down elco-topbar-caret"></i>
+                </button>
+
+                <div id="profileDropdown" class="elco-topbar-dropdown hidden" style="min-width:240px;">
+                    <div class="elco-topbar-dropdown-header">
+                        <p>{{ auth()->user()->name }}</p>
+                        <span>{{ auth()->user()->email }}</span>
+                    </div>
+                    <a href="{{ route('profile.edit') }}" class="elco-topbar-notif-item">
+                        <div class="elco-topbar-notif-icon" style="background:rgba(255,246,235,0.08);color:rgba(255,246,235,0.68);">
+                            <i class="ph ph-user-circle"></i>
+                        </div>
+                        <div><p>Edit Profil</p></div>
+                    </a>
+                    <div style="border-top:1px solid rgba(255,238,220,0.10);margin:4px 0;"></div>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit"
-                            class="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 smooth-transition">
-                            <i class="ph ph-sign-out"></i> Keluar
+                        <button type="submit" class="elco-topbar-notif-item elco-topbar-logout">
+                            <div class="elco-topbar-notif-icon" style="background:rgba(239,99,88,0.12);color:#f87171;">
+                                <i class="ph ph-sign-out"></i>
+                            </div>
+                            <div><p>Keluar</p></div>
                         </button>
                     </form>
                 </div>
@@ -140,25 +128,21 @@
 
 @push('scripts')
 <script>
-function toggleNotif() {
-    const dd = document.getElementById('notifDropdown');
-    dd.classList.toggle('hidden');
+function toggleAdminNotif() {
+    document.getElementById('adminNotifDropdown').classList.toggle('hidden');
     document.getElementById('profileDropdown')?.classList.add('hidden');
 }
-
 function toggleProfile() {
-    const dd = document.getElementById('profileDropdown');
-    dd.classList.toggle('hidden');
-    document.getElementById('notifDropdown')?.classList.add('hidden');
+    document.getElementById('profileDropdown').classList.toggle('hidden');
+    document.getElementById('adminNotifDropdown')?.classList.add('hidden');
 }
-// Tutup jika klik di luar
 document.addEventListener('click', function(e) {
-    const notifWrapper = document.getElementById('notifWrapper');
-    const profileWrapper = document.getElementById('profileWrapper');
-    if (notifWrapper && !notifWrapper.contains(e.target)) {
-        document.getElementById('notifDropdown')?.classList.add('hidden');
+    const notifW = document.getElementById('adminNotifWrapper');
+    const profileW = document.getElementById('profileWrapper');
+    if (notifW && !notifW.contains(e.target)) {
+        document.getElementById('adminNotifDropdown')?.classList.add('hidden');
     }
-    if (profileWrapper && !profileWrapper.contains(e.target)) {
+    if (profileW && !profileW.contains(e.target)) {
         document.getElementById('profileDropdown')?.classList.add('hidden');
     }
 });

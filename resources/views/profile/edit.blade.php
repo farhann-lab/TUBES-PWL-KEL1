@@ -89,6 +89,113 @@
         </form>
     </div>
 
+    {{-- Form Ganti Password --}}
+    <div class="bg-white rounded-3xl shadow-soft p-6">
+        <h3 class="font-display font-semibold text-gray-800 mb-5">
+            <i class="ph ph-lock mr-2 text-elco-coffee"></i>Ganti Password
+        </h3>
+        <form method="POST" action="{{ route('password.update') }}" class="space-y-4">
+            @csrf
+            @method('put')
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Password Saat Ini</label>
+                <div class="relative">
+                    <input type="password" name="current_password" id="currentPass"
+                        autocomplete="current-password"
+                        class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm smooth-transition pr-12
+                        @error('current_password', 'updatePassword') border-red-400 @enderror">
+                    <button type="button" onclick="togglePass('currentPass')"
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        <i class="ph ph-eye" id="currentPass-icon"></i>
+                    </button>
+                </div>
+                @error('current_password', 'updatePassword')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Password Baru</label>
+                <div class="relative">
+                    <input type="password" name="password" id="newPass"
+                        autocomplete="new-password"
+                        class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm smooth-transition pr-12
+                        @error('password', 'updatePassword') border-red-400 @enderror">
+                    <button type="button" onclick="togglePass('newPass')"
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        <i class="ph ph-eye" id="newPass-icon"></i>
+                    </button>
+                </div>
+                @error('password', 'updatePassword')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Konfirmasi Password Baru</label>
+                <div class="relative">
+                    <input type="password" name="password_confirmation" id="confirmPass"
+                        autocomplete="new-password"
+                        class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm smooth-transition pr-12">
+                    <button type="button" onclick="togglePass('confirmPass')"
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        <i class="ph ph-eye" id="confirmPass-icon"></i>
+                    </button>
+                </div>
+            </div>
+
+            {{-- Indikator Kekuatan Password --}}
+            <div id="passwordStrength" class="hidden">
+                <div class="flex gap-1 mt-1">
+                    <div class="h-1 flex-1 rounded-full bg-gray-200" id="str1"></div>
+                    <div class="h-1 flex-1 rounded-full bg-gray-200" id="str2"></div>
+                    <div class="h-1 flex-1 rounded-full bg-gray-200" id="str3"></div>
+                    <div class="h-1 flex-1 rounded-full bg-gray-200" id="str4"></div>
+                </div>
+                <p class="text-xs mt-1" id="strLabel"></p>
+            </div>
+
+            <button type="submit"
+                class="w-full py-3 rounded-2xl bg-elco-coffee text-white text-sm font-semibold shadow-md hover:bg-elco-mocha smooth-transition active:scale-95">
+                <i class="ph ph-lock-key mr-1"></i> Ganti Password
+            </button>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-soft p-6">
+        <h3 class="font-display font-semibold text-gray-800 mb-2">
+            <i class="ph ph-warning-circle mr-2 text-red-500"></i>Hapus Akun
+        </h3>
+        <p class="text-sm text-gray-500 mb-5">
+            Masukkan password untuk menghapus akun secara permanen.
+        </p>
+        <form id="deleteProfileForm" method="POST" action="{{ route('profile.destroy') }}" class="space-y-4">
+            @csrf
+            @method('delete')
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Password Saat Ini</label>
+                <input type="password" name="password" autocomplete="current-password"
+                    class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-300 text-sm smooth-transition
+                    @error('password', 'userDeletion') border-red-400 @enderror">
+                @error('password', 'userDeletion')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+            <button type="button"
+                onclick="elcoConfirm({
+                    title: 'Hapus Akun?',
+                    text: 'Akun kamu akan dihapus permanen dan sesi akan keluar.',
+                    confirmText: 'Hapus Akun',
+                    confirmColor: '#ef4444',
+                    icon: 'warning',
+                    onConfirm: () => document.getElementById('deleteProfileForm').submit()
+                })"
+                class="w-full py-3 rounded-2xl bg-red-500 text-white text-sm font-semibold shadow-md hover:bg-red-600 smooth-transition active:scale-95">
+                <i class="ph ph-trash mr-1"></i> Hapus Akun
+            </button>
+        </form>
+    </div>
 </div>
 @endsection
 

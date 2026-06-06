@@ -17,8 +17,9 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
             $table->foreignId('menu_id')
+                ->nullable()
                 ->constrained()
-                ->restrictOnDelete();
+                ->nullOnDelete();
             $table->string('menu_name');                    // snapshot nama menu
             $table->decimal('price', 10, 2);                // snapshot harga saat transaksi
             $table->integer('quantity');

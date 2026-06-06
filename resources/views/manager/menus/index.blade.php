@@ -11,23 +11,23 @@
 @endif
 
 {{-- Header --}}
-<div class="flex items-center justify-between mb-6">
+<div class="mb-8 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
     <div>
-        <h2 class="text-xl font-display font-bold text-gray-800">Manajemen Menu</h2>
-        <p class="text-sm text-gray-500 mt-1">Kelola menu & harga dasar ELCO</p>
+        <h2 class="text-2xl font-display font-bold text-gray-800">Manajemen Menu</h2>
+        <p class="mt-2 text-sm text-gray-500">Kelola menu, gambar, resep, dan harga dasar ELCO</p>
     </div>
     <a href="{{ route('manager.menus.create') }}"
-       class="flex items-center gap-2 bg-gradient-to-r from-elco-coffee to-elco-mocha text-white text-sm font-semibold px-5 py-3 rounded-2xl shadow-md hover:shadow-hover smooth-transition active:scale-95">
+       class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-elco-coffee to-elco-mocha text-white text-sm font-semibold px-6 py-3.5 rounded-2xl shadow-md hover:shadow-hover smooth-transition active:scale-95">
         <i class="ph ph-plus"></i> Tambah Menu
     </a>
 </div>
 
 {{-- Filter Kategori --}}
-<div class="flex gap-2 mb-6">
+<div class="mb-8 flex flex-wrap gap-3">
     @foreach(['semua', 'minuman', 'makanan', 'snack'] as $cat)
     <button onclick="filterMenu('{{ $cat }}')"
         id="btn-{{ $cat }}"
-        class="px-4 py-2 rounded-xl text-sm font-medium smooth-transition
+        class="px-5 py-2.5 rounded-2xl text-sm font-medium smooth-transition
         {{ $cat === 'semua' ? 'bg-elco-coffee text-white shadow-md' : 'bg-white text-gray-500 hover:bg-gray-50 shadow-soft' }}">
         {{ ucfirst($cat) }}
     </button>
@@ -35,35 +35,23 @@
 </div>
 
 {{-- Grid Menu --}}
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="menu-grid">
+<div class="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3" id="menu-grid">
     @forelse($menus as $menu)
-    <div class="menu-card bg-white rounded-3xl shadow-soft overflow-hidden smooth-transition
-        {{ $menu->trashed() ? 'opacity-50' : 'hover:-translate-y-1 hover:shadow-hover' }}"
+    <div class="menu-card bg-white rounded-3xl shadow-soft overflow-hidden smooth-transition hover:-translate-y-1 hover:shadow-hover"
         data-category="{{ $menu->category }}">
 
         {{-- Gambar Menu --}}
-        <div class="h-44 bg-gradient-to-br from-elco-cream to-orange-50 relative overflow-hidden">
-            @if($menu->image)
-                <img src="{{ asset('storage/' . ltrim($menu->image, '/')) }}"
-                     alt="{{ $menu->name }}"
-                     class="w-full h-full object-cover">
-            @else
-                <div class="w-full h-full flex items-center justify-center">
-                    <i class="ph-fill ph-coffee text-6xl text-elco-latte/50"></i>
-                </div>
-            @endif
+        <div class="relative h-52 overflow-hidden bg-gradient-to-br from-elco-cream to-orange-50">
+            <img src="{{ $menu->image_url }}"
+                 alt="{{ $menu->name }}"
+                 class="h-full w-full object-cover">
 
             {{-- Badge Kategori --}}
             <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold bg-white/80 backdrop-blur-sm text-elco-coffee">
                 {{ ucfirst($menu->category) }}
             </span>
 
-            {{-- Badge Status --}}
-            @if($menu->trashed())
-                <span class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold bg-red-500 text-white">
-                    Dihapus
-                </span>
-            @elseif(!$menu->is_available)
+            @if(!$menu->is_available)
                 <span class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500 text-white">
                     Nonaktif
                 </span>
@@ -71,14 +59,14 @@
         </div>
 
         {{-- Info Menu --}}
-        <div class="p-5">
+        <div class="p-6">
             <h3 class="font-display font-bold text-gray-800 text-lg">{{ $menu->name }}</h3>
             <p class="text-sm text-gray-500 mt-1 line-clamp-2">
                 {{ $menu->description ?? 'Tidak ada deskripsi' }}
             </p>
 
             {{-- Harga --}}
-            <div class="mt-4 flex items-center justify-between">
+            <div class="mt-6 flex items-center justify-between gap-4">
                 <div>
                     <p class="text-xs text-gray-400">Harga Dasar</p>
                     <p class="text-lg font-display font-bold text-elco-coffee">
@@ -87,45 +75,35 @@
                 </div>
 
                 {{-- Aksi --}}
-                @if($menu->trashed())
-                    <form action="{{ route('manager.menus.restore', $menu->id) }}" method="POST">
+                <div class="flex gap-2">
+                    @if($menu->isIngredientBased())
+                        <a href="{{ route('manager.menus.recipe', $menu) }}"
+                           class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-700 smooth-transition hover:bg-amber-100">
+                            <i class="ph ph-flask"></i>
+                        </a>
+                    @endif
+                    <a href="{{ route('manager.menus.edit', $menu) }}"
+                       class="flex h-10 w-10 items-center justify-center rounded-xl bg-elco-cream text-elco-coffee smooth-transition hover:bg-elco-latte/30">
+                        <i class="ph ph-pencil"></i>
+                    </a>
+                    <form id="form-hapus-{{ $menu->id }}" method="POST"
+                        action="{{ route('manager.menus.destroy', $menu->id) }}">
                         @csrf
-                        <button type="submit"
-                            class="text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl hover:bg-emerald-100 smooth-transition">
-                            <i class="ph ph-arrow-counter-clockwise"></i> Pulihkan
+                        @method('DELETE')
+                        <button type="button"
+                            onclick="elcoConfirm({
+                                title: 'Hapus Permanen?',
+                                text: 'Menu {{ addslashes($menu->name) }} akan dihapus permanen dari daftar menu. Riwayat transaksi tetap tersimpan.',
+                                confirmText: 'Hapus Permanen',
+                                confirmColor: '#ef4444',
+                                icon: 'warning',
+                                onConfirm: () => document.getElementById('form-hapus-{{ $menu->id }}').submit()
+                            })"
+                            class="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-red-500 smooth-transition hover:bg-red-100">
+                            <i class="ph ph-trash"></i>
                         </button>
                     </form>
-                @else
-                    <div class="flex gap-2">
-                        @if($menu->isIngredientBased())
-                            <a href="{{ route('manager.menus.recipe', $menu) }}"
-                               class="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center hover:bg-amber-100 smooth-transition">
-                                <i class="ph ph-flask"></i>
-                            </a>
-                        @endif
-                        <a href="{{ route('manager.menus.edit', $menu) }}"
-                           class="w-9 h-9 rounded-xl bg-elco-cream text-elco-coffee flex items-center justify-center hover:bg-elco-latte/30 smooth-transition">
-                            <i class="ph ph-pencil"></i>
-                        </a>
-                        <form id="form-hapus-{{ $menu->id }}" method="POST"
-                            action="{{ route('manager.menus.destroy', $menu->id) }}">
-                            @csrf
-                            @method('DELETE')
-                            <button type="button"
-                                onclick="elcoConfirm({
-                                    title: 'Hapus Menu?',
-                                    text: 'Menu {{ addslashes($menu->name) }} akan dinonaktifkan.',
-                                    confirmText: 'Ya, Hapus',
-                                    confirmColor: '#ef4444',
-                                    icon: 'warning',
-                                    onConfirm: () => document.getElementById('form-hapus-{{ $menu->id }}').submit()
-                                })"
-                                class="w-9 h-9 rounded-xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 smooth-transition">
-                                <i class="ph ph-trash"></i>
-                            </button>
-                        </form>
-                    </div>
-                @endif
+                </div>
             </div>
         </div>
     </div>

@@ -29,7 +29,7 @@
                 <div id="uploadPlaceholder">
                     <i class="ph ph-image text-4xl text-gray-300 block text-center mb-2"></i>
                     <p class="text-sm text-gray-400 text-center">Klik untuk upload foto menu</p>
-                    <p class="text-xs text-gray-300 text-center mt-1">JPG, PNG, WEBP - Maks 5MB</p>
+                    <p class="text-xs text-gray-300 text-center mt-1">JPG, PNG, WEBP — Maks 2MB</p>
                 </div>
                 <input type="file" id="imageInput" name="image" accept="image/*" class="hidden"
                        onchange="previewImage(this)">

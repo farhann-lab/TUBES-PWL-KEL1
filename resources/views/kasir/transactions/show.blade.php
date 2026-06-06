@@ -88,12 +88,9 @@
 
     @php
         $isRequestCancel = str_starts_with($transaction->cancel_reason ?? '', '[REQUEST CANCEL]');
-        $canRequestCancel = $transaction->status === 'completed'
-            && ! $isRequestCancel
-            && $transaction->created_at->diffInMinutes(now()) <= 60;
     @endphp
 
-    @if($canRequestCancel)
+    @if($transaction->status === 'completed' && ! $isRequestCancel)
         <button
             type="button"
             onclick="requestCancel({{ $transaction->id }})"
@@ -102,10 +99,6 @@
             <i class="ph ph-x-circle mr-1"></i>
             Minta Pembatalan Pesanan
         </button>
-    @elseif($transaction->status === 'completed' && ! $isRequestCancel)
-        <div class="mt-4 rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-500">
-            Batas waktu pembatalan 1 jam setelah transaksi sudah lewat.
-        </div>
     @elseif($isRequestCancel)
         <div class="mt-4 rounded-2xl border border-orange-100 bg-orange-50 px-4 py-3 text-sm text-orange-700">
             Permintaan pembatalan sudah dikirim dan menunggu admin cabang.

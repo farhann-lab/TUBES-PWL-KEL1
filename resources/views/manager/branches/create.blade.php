@@ -1,230 +1,166 @@
 @extends('layouts.manager')
 
 @section('content')
+
 <div class="max-w-2xl mx-auto">
 
     <div class="flex items-center gap-4 mb-6">
         <a href="{{ route('manager.branches.index') }}"
-           class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-soft hover:shadow-hover smooth-transition">
-            <i class="ph ph-arrow-left text-gray-500"></i>
+           class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-soft hover:shadow-hover smooth-transition text-gray-500 hover:text-elco-coffee">
+            <i class="ph ph-arrow-left"></i>
         </a>
         <div>
-            <h2 class="text-xl font-display font-bold text-gray-800">Buka Cabang Baru</h2>
-            <p class="text-sm text-gray-500">3 langkah untuk membuka cabang</p>
+            <h2 class="text-xl font-display font-bold text-gray-800">Tambah Cabang Baru</h2>
+            <p class="text-sm text-gray-500">Data cabang + akun admin akan dibuat sekaligus</p>
         </div>
     </div>
 
-    {{-- Step Indicator --}}
-    <div class="flex items-center gap-2 mb-8">
-        @foreach([['1','Data Cabang'],['2','Akun Admin'],['3','Stok Awal']] as $i => [$num, $label])
-        <div class="flex items-center gap-2 flex-1">
-            <div id="step-dot-{{ $num }}"
-                class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold smooth-transition
-                {{ $num === '1' ? 'bg-elco-coffee text-white' : 'bg-gray-200 text-gray-500' }}">
-                {{ $num }}
-            </div>
-            <span id="step-label-{{ $num }}"
-                class="text-xs font-medium smooth-transition
-                {{ $num === '1' ? 'text-elco-coffee' : 'text-gray-400' }}">
-                {{ $label }}
-            </span>
-            @if($i < 2)
-            <div id="step-line-{{ $num }}" class="flex-1 h-0.5 smooth-transition
-                {{ 'bg-gray-200' }}"></div>
-            @endif
-        </div>
-        @endforeach
-    </div>
+    {{-- Satu Card untuk Semua --}}
+    <div class="bg-white rounded-3xl shadow-soft p-8">
+        <form action="{{ route('manager.branches.store') }}" method="POST" class="space-y-5">
+            @csrf
 
-    <form action="{{ route('manager.branches.store') }}" method="POST" id="branchForm">
-        @csrf
-
-        {{-- STEP 1: Data Cabang --}}
-        <div id="step1" class="bg-white rounded-3xl shadow-soft p-8 space-y-5">
-            <h3 class="font-display font-semibold text-gray-800 text-lg">Data Cabang</h3>
-
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Cabang *</label>
-                <input type="text" name="name" value="{{ old('name') }}" placeholder="contoh: Elco Coffee - Medan Kota"
-                    class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm">
-            </div>
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Alamat *</label>
-                <textarea name="address" rows="3" placeholder="Alamat lengkap cabang..."
-                    class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm resize-none">{{ old('address') }}</textarea>
-            </div>
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">No. Telepon</label>
-                <input type="text" name="phone" value="{{ old('phone') }}" placeholder="contoh: 0812xxxxxxxx"
-                    class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm">
-            </div>
-            <input type="hidden" name="status" value="active">
-
-            <button type="button" onclick="goStep(2)"
-                class="w-full py-3 rounded-2xl bg-gradient-to-r from-elco-coffee to-elco-mocha text-white text-sm font-semibold shadow-md hover:shadow-hover smooth-transition">
-                Lanjut → Akun Admin
-            </button>
-        </div>
-
-        {{-- STEP 2: Akun Admin --}}
-        <div id="step2" class="hidden bg-white rounded-3xl shadow-soft p-8 space-y-5">
-            <h3 class="font-display font-semibold text-gray-800 text-lg">Akun Admin Cabang</h3>
-
-            <div class="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-2xl p-4">
-                <i class="ph ph-info text-blue-500 text-xl mt-0.5"></i>
-                <p class="text-sm text-blue-600">Email harus menggunakan domain <strong>@elco.com</strong></p>
+            {{-- ── SECTION 1: Data Cabang ── --}}
+            <div class="flex items-center gap-2 mb-2">
+                <div class="w-7 h-7 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center text-sm">
+                    <i class="ph-fill ph-storefront"></i>
+                </div>
+                <p class="text-sm font-bold text-gray-700 uppercase tracking-wide">Data Cabang</p>
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Admin *</label>
-                <input type="text" name="admin_name" value="{{ old('admin_name') }}" placeholder="Nama lengkap admin"
-                    class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm">
-            </div>
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Email Admin *</label>
-                <input type="email" name="admin_email" id="adminEmail" value="{{ old('admin_email') }}" placeholder="nama@elco.com"
-                    pattern="^[A-Za-z0-9._%+\-]+@elco\.com$"
-                    title="Email admin harus menggunakan domain @elco.com"
-                    oninput="validateAdminEmail()"
-                    class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm">
-                <p id="adminEmailError" class="mt-1 hidden text-xs text-red-500">
-                    Email admin harus menggunakan domain @elco.com.
-                </p>
-                @error('admin_email')
-                    <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    Nama Cabang <span class="text-red-500">*</span>
+                </label>
+                <input type="text" name="name" value="{{ old('name') }}"
+                    placeholder="contoh: ELCO Banda Aceh"
+                    class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 focus:border-elco-mocha text-sm smooth-transition
+                    @error('name') border-red-400 @enderror">
+                @error('name')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
             </div>
+
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Password Admin *</label>
-                <input type="password" name="admin_password" placeholder="Minimal 8 karakter"
-                    class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    Alamat <span class="text-red-500">*</span>
+                </label>
+                <textarea name="address" rows="2"
+                    placeholder="Alamat lengkap cabang..."
+                    class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 focus:border-elco-mocha text-sm smooth-transition resize-none
+                    @error('address') border-red-400 @enderror">{{ old('address') }}</textarea>
+                @error('address')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
-            <div class="flex gap-3">
-                <button type="button" onclick="goStep(1)"
-                    class="flex-1 py-3 rounded-2xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 smooth-transition">
-                    ← Kembali
-                </button>
-                <button type="button" id="adminNextBtn" onclick="goStep(3)"
-                    class="flex-1 py-3 rounded-2xl bg-gradient-to-r from-elco-coffee to-elco-mocha text-white text-sm font-semibold smooth-transition disabled:cursor-not-allowed disabled:opacity-50">
-                    Lanjut → Stok Awal
-                </button>
-            </div>
-        </div>
-
-        {{-- STEP 3: Stok Awal --}}
-        <div id="step3" class="hidden bg-white rounded-3xl shadow-soft p-8 space-y-5">
-            <h3 class="font-display font-semibold text-gray-800 text-lg">Stok Awal Cabang</h3>
-
-            <div class="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-2xl p-4">
-                <i class="ph ph-info text-amber-500 text-xl mt-0.5"></i>
-                <div class="text-sm text-amber-700">
-                    <p><strong>Minuman</strong> — isi stok bahan baku (gram/ml)</p>
-                    <p class="mt-1"><strong>Makanan/Snack</strong> — isi stok produk jadi (pcs)</p>
-                    <p class="mt-1">Kosongkan jika akan diisi nanti via Pengajuan Stok.</p>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nomor Telepon</label>
+                    <input type="text" name="phone" value="{{ old('phone') }}"
+                        placeholder="0811-xxxx-xxxx"
+                        class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm smooth-transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                    <select name="status"
+                        class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm smooth-transition bg-white">
+                        <option value="active"   {{ old('status') === 'active'   ? 'selected' : '' }}>Aktif</option>
+                        <option value="inactive" {{ old('status') === 'inactive' ? 'selected' : '' }}>Nonaktif</option>
+                    </select>
                 </div>
             </div>
 
-            {{-- Stok Bahan Baku --}}
-            @if(isset($ingredients) && $ingredients->count())
-            <div>
-                <p class="text-sm font-semibold text-gray-700 mb-3">☕ Bahan Baku Minuman</p>
-                <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    @foreach($ingredients as $ing)
-                    <div class="flex items-center gap-3">
-                        <label class="text-sm text-gray-700 flex-1">{{ $ing->nama_bahan }}</label>
-                        <input type="number" name="stok_bahan[{{ $ing->id }}]" min="0" step="0.1"
-                            placeholder="0"
-                            class="w-28 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-elco-mocha/30">
-                        <span class="text-xs text-gray-400 w-10">{{ $ing->satuan }}</span>
+            {{-- ── DIVIDER ── --}}
+            <div class="border-t border-gray-100 pt-5">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center text-sm">
+                        <i class="ph-fill ph-user-circle"></i>
                     </div>
-                    @endforeach
-                </div>
-            </div>
-            @endif
-
-            {{-- Stok Makanan/Snack --}}
-            @if(isset($menusMakanan) && $menusMakanan->count())
-            <div>
-                <p class="text-sm font-semibold text-gray-700 mb-3">🍰 Makanan & Snack</p>
-                <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    @foreach($menusMakanan as $menu)
-                    <div class="flex items-center gap-3">
-                        <label class="text-sm text-gray-700 flex-1">{{ $menu->name }}</label>
-                        <input type="number" name="stok_makanan[{{ $menu->id }}]" min="0"
-                            placeholder="0"
-                            class="w-28 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-elco-mocha/30">
-                        <span class="text-xs text-gray-400 w-10">pcs</span>
+                    <div>
+                        <p class="text-sm font-bold text-gray-700 uppercase tracking-wide">Akun Admin Cabang</p>
+                        <p class="text-xs text-gray-400">Akan dibuat otomatis bersama cabang</p>
                     </div>
-                    @endforeach
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Nama Admin <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="admin_name" value="{{ old('admin_name') }}"
+                            placeholder="contoh: Budi Santoso"
+                            class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 focus:border-elco-mocha text-sm smooth-transition
+                            @error('admin_name') border-red-400 @enderror">
+                        @error('admin_name')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Email Admin <span class="text-red-500">*</span>
+                        </label>
+                        <input type="email" name="admin_email" value="{{ old('admin_email') }}"
+                            placeholder="admin@elco.com"
+                            class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 focus:border-elco-mocha text-sm smooth-transition
+                            @error('admin_email') border-red-400 @enderror">
+                        @error('admin_email')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Password Admin <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="password" name="admin_password" id="adminPass"
+                                placeholder="Minimal 8 karakter"
+                                class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm smooth-transition pr-12
+                                @error('admin_password') border-red-400 @enderror">
+                            <button type="button" onclick="toggleAdminPass()"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <i class="ph ph-eye" id="adminPassIcon"></i>
+                            </button>
+                        </div>
+                        @error('admin_password')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
             </div>
-            @endif
 
+            {{-- Tombol --}}
             <div class="flex gap-3 pt-2">
-                <button type="button" onclick="goStep(2)"
-                    class="flex-1 py-3 rounded-2xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 smooth-transition">
-                    ← Kembali
-                </button>
+                <a href="{{ route('manager.branches.index') }}"
+                   class="flex-1 text-center py-3 rounded-2xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 smooth-transition">
+                    Batal
+                </a>
                 <button type="submit"
-                    class="flex-1 py-3 rounded-2xl bg-gradient-to-r from-elco-coffee to-elco-mocha text-white text-sm font-semibold shadow-md hover:shadow-hover smooth-transition">
-                    <i class="ph ph-check mr-1"></i> Buka Cabang
+                    class="flex-1 py-3 rounded-2xl bg-gradient-to-r from-elco-coffee to-elco-mocha text-white text-sm font-semibold shadow-md hover:shadow-hover smooth-transition active:scale-95">
+                    <i class="ph ph-plus mr-1"></i> Simpan Cabang & Admin
                 </button>
             </div>
-        </div>
-
-    </form>
+        </form>
+    </div>
 </div>
+
 @endsection
 
 @push('scripts')
 <script>
-function validateAdminEmail() {
-    const input = document.getElementById('adminEmail');
-    const error = document.getElementById('adminEmailError');
-    const nextButton = document.getElementById('adminNextBtn');
-    const value = input.value.trim();
-    const isValid = /^[A-Za-z0-9._%+\-]+@elco\.com$/i.test(value);
-    const shouldShowError = value.length > 0 && !isValid;
-
-    input.classList.toggle('border-red-400', shouldShowError);
-    error.classList.toggle('hidden', !shouldShowError);
-
-    if (nextButton) {
-        nextButton.disabled = !isValid;
-    }
-
-    return isValid;
-}
-
-function goStep(n) {
-    if (n === 3 && !validateAdminEmail()) {
-        document.getElementById('adminEmail').focus();
-        return;
-    }
-
-    [1, 2, 3].forEach(i => {
-        document.getElementById('step' + i).classList.add('hidden');
-        document.getElementById('step-dot-' + i).className =
-            'w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold smooth-transition bg-gray-200 text-gray-500';
-        document.getElementById('step-label-' + i).className =
-            'text-xs font-medium smooth-transition text-gray-400';
-        if (i < 3) document.getElementById('step-line-' + i).className =
-            'flex-1 h-0.5 smooth-transition bg-gray-200';
-    });
-    document.getElementById('step' + n).classList.remove('hidden');
-    document.getElementById('step-dot-' + n).className =
-        'w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold smooth-transition bg-elco-coffee text-white';
-    document.getElementById('step-label-' + n).className =
-        'text-xs font-medium smooth-transition text-elco-coffee';
-    for (let i = 1; i < n; i++) {
-        document.getElementById('step-line-' + i).className =
-            'flex-1 h-0.5 smooth-transition bg-elco-coffee';
-        document.getElementById('step-dot-' + i).className =
-            'w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold smooth-transition bg-emerald-500 text-white';
+function toggleAdminPass() {
+    const input = document.getElementById('adminPass');
+    const icon  = document.getElementById('adminPassIcon');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('ph-eye', 'ph-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.replace('ph-eye-slash', 'ph-eye');
     }
 }
 
-document.addEventListener('DOMContentLoaded', validateAdminEmail);
 </script>
 @endpush

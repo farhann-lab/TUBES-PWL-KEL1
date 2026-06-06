@@ -1,8 +1,8 @@
 @extends('layouts.kasir')
 
 @section('content')
-<div class="space-y-6">
-    <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+<div class="space-y-8">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
             <h2 class="font-display text-lg font-semibold text-gray-800">Ringkasan Hari Ini</h2>
             <p class="text-sm text-gray-400">{{ now()->translatedFormat('d F Y') }}</p>
@@ -45,8 +45,8 @@
     </div>
 
     {{-- Menu Tersedia --}}
-    <div class="rounded-3xl bg-white p-6 shadow-soft">
-        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="rounded-3xl bg-white p-7 shadow-soft">
+        <div class="mb-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 class="font-display text-lg font-semibold text-gray-800">Menu Tersedia Hari Ini</h2>
             <a
                 href="{{ route('kasir.transactions.index') }}"
@@ -57,17 +57,19 @@
             </a>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div class="grid grid-cols-2 gap-5 md:grid-cols-4 2xl:gap-7">
             @forelse($data['available_menus'] as $item)
-                <div class="group cursor-pointer rounded-2xl border border-gray-100 p-4 smooth-transition hover:border-elco-latte/50 hover:shadow-soft">
-                    <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-xl text-orange-400 smooth-transition group-hover:bg-elco-cream">
-                        <i class="ph-fill ph-coffee"></i>
-                    </div>
+                <div class="group cursor-pointer overflow-hidden rounded-3xl border border-gray-100 bg-white smooth-transition hover:-translate-y-1 hover:border-elco-latte/50 hover:shadow-soft">
+                    <img src="{{ $item->menu->image_url }}"
+                         alt="{{ $item->menu->name }}"
+                         class="h-32 w-full object-cover">
+                    <div class="p-4">
                     <p class="truncate text-sm font-semibold text-gray-800">{{ $item->menu->name }}</p>
                     <p class="mt-1 text-xs text-gray-500">Stok: {{ $item->stock }}</p>
                     <p class="mt-1 text-xs font-semibold text-elco-coffee">
                         Rp {{ number_format($item->effective_price, 0, ',', '.') }}
                     </p>
+                    </div>
                 </div>
             @empty
                 <div class="col-span-2 py-8 text-center text-gray-400 md:col-span-4">

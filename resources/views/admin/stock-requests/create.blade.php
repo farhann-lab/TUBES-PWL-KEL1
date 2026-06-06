@@ -1,272 +1,303 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="max-w-2xl mx-auto">
-
-    <div class="flex items-center gap-4 mb-6">
-        <a href="{{ route('admin.stock-requests.index') }}"
-           class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-soft hover:shadow-hover smooth-transition text-gray-500 hover:text-elco-coffee">
-            <i class="ph ph-arrow-left"></i>
-        </a>
-        <div>
-            <h2 class="text-xl font-display font-bold text-gray-800">Buat Pengajuan</h2>
-            <p class="text-sm text-gray-500">Pengajuan akan dikirim ke Manager Pusat</p>
+<div class="mx-auto max-w-6xl">
+    <div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex items-center gap-4">
+            <a href="{{ route('admin.stock-requests.index') }}"
+               class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-gray-500 shadow-soft smooth-transition hover:text-elco-coffee hover:shadow-hover">
+                <i class="ph ph-arrow-left"></i>
+            </a>
+            <div>
+                <h2 class="font-display text-2xl font-bold text-gray-800">Request Stok</h2>
+                <p class="mt-1 text-sm text-gray-500">Ajukan kebutuhan cabang ke manager pusat</p>
+            </div>
         </div>
+        <a href="{{ route('admin.stock-requests.index') }}"
+           class="inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-600 smooth-transition hover:bg-gray-50">
+            <i class="ph ph-clock-counter-clockwise"></i> Riwayat
+        </a>
     </div>
 
-    <div class="bg-white rounded-3xl shadow-soft p-8">
-        <form action="{{ route('admin.stock-requests.store') }}" method="POST" class="space-y-6">
+    <div class="grid grid-cols-1 gap-7 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
+        <form id="stockRequestForm" action="{{ route('admin.stock-requests.store') }}" method="POST"
+              class="space-y-7 rounded-3xl bg-white p-7 shadow-soft">
             @csrf
+            <input type="hidden" name="item_name" id="itemNameHidden" value="{{ old('item_name') }}">
 
-            <!-- {{-- Tipe Pengajuan --}}
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">
-                    Tipe Pengajuan <span class="text-red-500">*</span>
-                </label>
-                <div class="grid grid-cols-2 gap-3">
+                <label class="mb-3 block text-sm font-semibold text-gray-700">Jenis Pengajuan <span class="text-red-500">*</span></label>
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                     <label class="cursor-pointer">
                         <input type="radio" name="type" value="stock"
-                               class="sr-only peer" {{ old('type', 'stock') === 'stock' ? 'checked' : '' }}
-                               onchange="handleTypeChange()">
-                        <div class="p-4 border-2 border-gray-200 rounded-2xl peer-checked:border-elco-coffee peer-checked:bg-elco-cream smooth-transition text-center">
-                            <i class="ph-fill ph-package text-2xl text-gray-400 block mb-2"></i>
-                            <p class="text-sm font-semibold text-gray-700">Pengajuan Stok</p>
-                            <p class="text-xs text-gray-400 mt-1">Bahan baku & produk jadi</p>
+                               class="sr-only peer" {{ old('type', 'stock') === 'stock' ? 'checked' : '' }}>
+                        <div class="h-full rounded-2xl border-2 border-gray-200 p-5 smooth-transition peer-checked:border-elco-coffee peer-checked:bg-elco-cream">
+                            <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-500">
+                                <i class="ph-fill ph-package text-xl"></i>
+                            </div>
+                            <p class="text-sm font-bold text-gray-800">Stok Barang</p>
+                            <p class="mt-1 text-xs text-gray-500">Bahan baku atau produk jadi</p>
                         </div>
                     </label>
                     <label class="cursor-pointer">
                         <input type="radio" name="type" value="operational"
-                               class="sr-only peer" {{ old('type') === 'operational' ? 'checked' : '' }}
-                               onchange="handleTypeChange()">
-                        <div class="p-4 border-2 border-gray-200 rounded-2xl peer-checked:border-elco-coffee peer-checked:bg-elco-cream smooth-transition text-center">
-                            <i class="ph-fill ph-wrench text-2xl text-gray-400 block mb-2"></i>
-                            <p class="text-sm font-semibold text-gray-700">Alat Operasional</p>
-                            <p class="text-xs text-gray-400 mt-1">Peralatan & perlengkapan</p>
+                               class="sr-only peer" {{ old('type') === 'operational' ? 'checked' : '' }}>
+                        <div class="h-full rounded-2xl border-2 border-gray-200 p-5 smooth-transition peer-checked:border-elco-coffee peer-checked:bg-elco-cream">
+                            <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-purple-50 text-purple-500">
+                                <i class="ph-fill ph-wrench text-xl"></i>
+                            </div>
+                            <p class="text-sm font-bold text-gray-800">Operasional</p>
+                            <p class="mt-1 text-xs text-gray-500">Peralatan atau kebutuhan cabang</p>
                         </div>
                     </label>
                 </div>
                 @error('type')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    <p class="mt-2 text-xs text-red-500">{{ $message }}</p>
                 @enderror
-            </div> -->
-
-            {{-- ══ SECTION STOK: Multi-item ══ --}}
-            <div id="sectionStok" class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <label class="text-sm font-semibold text-gray-700">Daftar Item yang Diajukan *</label>
-                    <button type="button" onclick="addStokRow()"
-                        class="text-xs font-medium text-elco-coffee bg-elco-cream px-3 py-2 rounded-xl hover:bg-elco-latte/30 smooth-transition">
-                        <i class="ph ph-plus"></i> Tambah Item
-                    </button>
-                </div>
-
-                <div id="stokRows" class="space-y-3">
-                    {{-- Baris pertama --}}
-                    <div class="stok-row grid grid-cols-[auto_1fr_auto_auto_auto] gap-2 items-center bg-gray-50 p-3 rounded-2xl">
-                        <select name="items[0][tipe]" onchange="handleTipeChange(this)"
-                            class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none w-36">
-                            <option value="bahan_baku">☕ Bahan Baku</option>
-                            <option value="produk_jadi">🍰 Produk Jadi</option>
-                            <option value="operasional">🔧 Operasional</option>
-                        </select>
-                        <div class="item-name-wrap">
-                            <select name="items[0][item_name]" class="item-select w-full px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none">
-                                <option value="">— Pilih Bahan —</option>
-                                @foreach($ingredients as $ing)
-                                <option value="{{ $ing->nama_bahan }}" data-satuan="{{ $ing->satuan }}">
-                                    {{ $ing->nama_bahan }}
-                                </option>
-                                @endforeach
-                            </select>
-                            <input type="text" name="items[0][item_name_ops]" placeholder="Nama alat/kebutuhan"
-                                class="ops-input hidden w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none">
-                        </div>
-                        <input type="number" name="items[0][quantity]" placeholder="Jumlah" min="1"
-                            class="w-24 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none">
-                        <input type="text" name="items[0][unit]" placeholder="Satuan"
-                            class="unit-input w-20 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none">
-                        <button type="button" onclick="removeRow(this)"
-                            class="w-8 h-8 rounded-lg bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 smooth-transition flex-shrink-0">
-                            <i class="ph ph-trash text-sm"></i>
-                        </button>
-                    </div>
-                </div>
-
-                {{-- Select untuk produk jadi (tersembunyi, dipakai via JS) --}}
-                <div id="produkJadiOptions" class="hidden">
-                    @foreach($produkJadi as $menu)
-                    <option value="{{ $menu->name }}" data-satuan="pcs">{{ $menu->name }}</option>
-                    @endforeach
-                </div>
             </div>
 
-            {{-- ══ SECTION OPERASIONAL ══ --}}
-            <div id="sectionOperasional" class="hidden">
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    Nama Alat/Kebutuhan <span class="text-red-500">*</span>
-                </label>
-                <input type="text" name="item_name_ops" id="itemNameOps"
-                    value="{{ old('item_name_ops') }}"
-                    placeholder="contoh: Mesin Espresso, Grinder, dll"
-                    class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 text-sm smooth-transition">
-            </div>
-
-            <!-- {{-- Jumlah & Satuan --}}
-            <div class="grid grid-cols-2 gap-4">
+            <div id="stockSection" class="space-y-6">
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Jumlah <span class="text-red-500">*</span>
-                    </label>
-                    <input type="number" name="quantity" value="{{ old('quantity') }}"
-                        placeholder="contoh: 50" min="1"
-                        class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 focus:border-elco-mocha text-sm smooth-transition
-                        @error('quantity') border-red-400 @enderror">
+                    <label class="mb-3 block text-sm font-semibold text-gray-700">Kategori Stok <span class="text-red-500">*</span></label>
+                    <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="stock_item_type" value="bahan_baku"
+                                   class="sr-only peer" {{ old('stock_item_type', 'bahan_baku') === 'bahan_baku' ? 'checked' : '' }}>
+                            <div class="rounded-2xl border-2 border-gray-200 p-4 smooth-transition peer-checked:border-amber-500 peer-checked:bg-amber-50">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                                        <i class="ph ph-flask text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-800">Bahan Baku</p>
+                                        <p class="text-xs text-gray-500">Dipakai untuk menu minuman</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="stock_item_type" value="produk_jadi"
+                                   class="sr-only peer" {{ old('stock_item_type') === 'produk_jadi' ? 'checked' : '' }}>
+                            <div class="rounded-2xl border-2 border-gray-200 p-4 smooth-transition peer-checked:border-emerald-500 peer-checked:bg-emerald-50">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                                        <i class="ph ph-bowl-food text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-800">Produk Jadi</p>
+                                        <p class="text-xs text-gray-500">Makanan dan snack per pcs</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                    @error('stock_item_type')
+                        <p class="mt-2 text-xs text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div id="ingredientField">
+                    <label class="mb-2 block text-sm font-semibold text-gray-700">Bahan Baku <span class="text-red-500">*</span></label>
+                    <select name="item_name_bahan" id="selectBahan"
+                        class="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm smooth-transition focus:border-elco-mocha focus:outline-none focus:ring-2 focus:ring-elco-mocha/30">
+                        <option value="">Pilih bahan baku</option>
+                        @foreach($ingredients as $ing)
+                        <option value="{{ $ing->nama_bahan }}" data-unit="{{ $ing->satuan }}"
+                            {{ old('item_name_bahan', old('item_name')) === $ing->nama_bahan ? 'selected' : '' }}>
+                            {{ $ing->nama_bahan }} ({{ $ing->satuan }})
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div id="finishedProductField" class="hidden">
+                    <label class="mb-2 block text-sm font-semibold text-gray-700">Produk Jadi <span class="text-red-500">*</span></label>
+                    <select name="item_name_produk" id="selectProduk"
+                        class="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm smooth-transition focus:border-elco-mocha focus:outline-none focus:ring-2 focus:ring-elco-mocha/30">
+                        <option value="">Pilih menu makanan/snack</option>
+                        @foreach($produkJadi as $menu)
+                        <option value="{{ $menu->name }}" data-unit="pcs"
+                            {{ old('item_name_produk', old('item_name')) === $menu->name ? 'selected' : '' }}>
+                            {{ $menu->name }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            <div id="operationalSection" class="hidden">
+                <label class="mb-2 block text-sm font-semibold text-gray-700">Nama Kebutuhan <span class="text-red-500">*</span></label>
+                <input type="text" name="item_name_ops" id="itemNameOps" value="{{ old('item_name_ops', old('item_name')) }}"
+                    placeholder="contoh: Filter air, grinder, gelas take away"
+                    class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm smooth-transition focus:border-elco-mocha focus:outline-none focus:ring-2 focus:ring-elco-mocha/30">
+            </div>
+
+            @error('item_name')
+                <p class="-mt-4 text-xs text-red-500">{{ $message }}</p>
+            @enderror
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_180px]">
+                <div>
+                    <label class="mb-2 block text-sm font-semibold text-gray-700">Jumlah <span class="text-red-500">*</span></label>
+                    <input type="number" name="quantity" id="quantityInput" value="{{ old('quantity') }}" min="1" step="1"
+                        placeholder="Masukkan jumlah"
+                        class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm smooth-transition focus:border-elco-mocha focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 @error('quantity') border-red-400 @enderror">
                     @error('quantity')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Satuan</label>
+                    <label class="mb-2 block text-sm font-semibold text-gray-700">Satuan</label>
                     <input type="text" name="unit" id="unitInput" value="{{ old('unit') }}"
-                        placeholder="gram / pcs / liter / unit"
-                        class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 focus:border-elco-mocha text-sm smooth-transition">
+                        placeholder="gram / ml / pcs"
+                        class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm smooth-transition focus:border-elco-mocha focus:outline-none focus:ring-2 focus:ring-elco-mocha/30">
                 </div>
-            </div> -->
+            </div>
 
-            {{-- Alasan --}}
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    Alasan Pengajuan
-                </label>
-                <textarea name="reason" rows="3"
-                    placeholder="Jelaskan alasan pengajuan ini..."
-                    class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-elco-mocha/30 focus:border-elco-mocha text-sm smooth-transition resize-none">{{ old('reason') }}</textarea>
+                <label class="mb-2 block text-sm font-semibold text-gray-700">Catatan</label>
+                <textarea name="reason" rows="4"
+                    placeholder="Tambahkan konteks kebutuhan cabang"
+                    class="w-full resize-none rounded-2xl border border-gray-200 px-4 py-3 text-sm smooth-transition focus:border-elco-mocha focus:outline-none focus:ring-2 focus:ring-elco-mocha/30">{{ old('reason') }}</textarea>
             </div>
 
-            <div class="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-2xl p-4">
-                <i class="ph ph-info text-amber-500 text-xl mt-0.5"></i>
-                <p class="text-sm text-amber-700">
-                    Pengajuan akan diproses oleh <strong>Manager Pusat</strong>.
-                    Stok akan diperbarui setelah disetujui dan barang diterima.
-                </p>
-            </div>
-
-            {{-- Tombol --}}
-            <div class="flex gap-3 pt-2">
+            <div class="flex flex-col gap-3 border-t border-gray-100 pt-2 md:flex-row">
                 <a href="{{ route('admin.stock-requests.index') }}"
-                   class="flex-1 text-center py-3 rounded-2xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 smooth-transition">
+                   class="flex-1 rounded-2xl border border-gray-200 py-3 text-center text-sm font-medium text-gray-600 smooth-transition hover:bg-gray-50">
                     Batal
                 </a>
                 <button type="submit"
-                    class="flex-1 py-3 rounded-2xl bg-gradient-to-r from-elco-coffee to-elco-mocha text-white text-sm font-semibold shadow-md hover:shadow-hover smooth-transition active:scale-95">
-                    <i class="ph ph-paper-plane-right mr-1"></i> Kirim Pengajuan
+                    class="flex-1 rounded-2xl bg-gradient-to-r from-elco-coffee to-elco-mocha py-3 text-sm font-semibold text-white shadow-md smooth-transition hover:shadow-hover active:scale-95">
+                    <i class="ph ph-paper-plane-right mr-1"></i> Kirim Request
                 </button>
             </div>
         </form>
+
+        <aside class="space-y-5">
+            <div class="rounded-3xl bg-white p-6 shadow-soft">
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Ringkasan Request</p>
+                <div class="mt-5 space-y-4">
+                    <div class="flex items-center justify-between gap-4">
+                        <span class="text-sm text-gray-500">Tipe</span>
+                        <span id="summaryType" class="text-sm font-bold text-gray-800">Stok Barang</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-4">
+                        <span class="text-sm text-gray-500">Item</span>
+                        <span id="summaryItem" class="max-w-[180px] truncate text-right text-sm font-bold text-gray-800">-</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-4">
+                        <span class="text-sm text-gray-500">Jumlah</span>
+                        <span id="summaryQty" class="text-sm font-bold text-gray-800">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-3xl bg-white p-6 shadow-soft">
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Status Setelah Dikirim</p>
+                <div class="mt-5 space-y-3">
+                    <div class="flex items-center gap-3 rounded-2xl bg-yellow-50 p-3">
+                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-yellow-100 text-yellow-600">
+                            <i class="ph ph-hourglass-medium"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800">Pending</p>
+                            <p class="text-xs text-gray-500">Menunggu keputusan manager</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 rounded-2xl bg-blue-50 p-3">
+                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                            <i class="ph ph-truck"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800">Menunggu Barang</p>
+                            <p class="text-xs text-gray-500">Aktif setelah disetujui</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 rounded-2xl bg-emerald-50 p-3">
+                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                            <i class="ph ph-check-circle"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800">Stok Bertambah</p>
+                            <p class="text-xs text-gray-500">Setelah final confirm manager</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
     </div>
 </div>
 @endsection
 
 @push('scripts')
 <script>
-const bahanOptions = `
-    <option value="">— Pilih Bahan —</option>
-    @foreach($ingredients as $ing)
-    <option value="{{ $ing->nama_bahan }}" data-satuan="{{ $ing->satuan }}">{{ $ing->nama_bahan }}</option>
-    @endforeach
-`;
+const typeInputs = document.querySelectorAll('input[name="type"]');
+const stockTypeInputs = document.querySelectorAll('input[name="stock_item_type"]');
+const stockSection = document.getElementById('stockSection');
+const operationalSection = document.getElementById('operationalSection');
+const ingredientField = document.getElementById('ingredientField');
+const finishedProductField = document.getElementById('finishedProductField');
+const selectBahan = document.getElementById('selectBahan');
+const selectProduk = document.getElementById('selectProduk');
+const itemNameOps = document.getElementById('itemNameOps');
+const itemNameHidden = document.getElementById('itemNameHidden');
+const unitInput = document.getElementById('unitInput');
+const quantityInput = document.getElementById('quantityInput');
+const summaryType = document.getElementById('summaryType');
+const summaryItem = document.getElementById('summaryItem');
+const summaryQty = document.getElementById('summaryQty');
 
-const produkOptions = `
-    <option value="">— Pilih Menu —</option>
-    @foreach($produkJadi as $menu)
-    <option value="{{ $menu->name }}" data-satuan="pcs">{{ $menu->name }}</option>
-    @endforeach
-`;
-
-let rowIdx = 1;
-
-function addStokRow() {
-    const div = document.createElement('div');
-    div.className = 'stok-row grid grid-cols-[auto_1fr_auto_auto_auto] gap-2 items-center bg-gray-50 p-3 rounded-2xl';
-    div.innerHTML = `
-        <select name="items[${rowIdx}][tipe]" onchange="handleTipeChange(this)"
-            class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none w-36">
-            <option value="bahan_baku">☕ Bahan Baku</option>
-            <option value="produk_jadi">🍰 Produk Jadi</option>
-            <option value="operasional">🔧 Operasional</option>
-        </select>
-        <div class="item-name-wrap">
-            <select name="items[${rowIdx}][item_name]"
-                onchange="updateUnit(this)"
-                class="item-select w-full px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none">
-                ${bahanOptions}
-            </select>
-            <input type="text" name="items[${rowIdx}][item_name_ops]" placeholder="Nama alat/kebutuhan"
-                class="ops-input hidden w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none">
-        </div>
-        <input type="number" name="items[${rowIdx}][quantity]" placeholder="Jumlah" min="1"
-            class="w-24 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none">
-        <input type="text" name="items[${rowIdx}][unit]" placeholder="Satuan"
-            class="unit-input w-20 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none">
-        <button type="button" onclick="removeRow(this)"
-            class="w-8 h-8 rounded-lg bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 flex-shrink-0">
-            <i class="ph ph-trash text-sm"></i>
-        </button>
-    `;
-    document.getElementById('stokRows').appendChild(div);
-    rowIdx++;
+function checkedValue(name) {
+    return document.querySelector(`input[name="${name}"]:checked`)?.value;
 }
 
-function removeRow(btn) {
-    const rows = document.querySelectorAll('.stok-row');
-    if (rows.length <= 1) return;
-    btn.closest('.stok-row').remove();
+function selectedText(select) {
+    if (!select || !select.value) return '';
+    return select.options[select.selectedIndex]?.text?.replace(/\s+\([^)]*\)$/, '') ?? select.value;
 }
 
-function handleTipeChange(select) {
-    const row  = select.closest('.stok-row');
-    const tipe = select.value;
-    const itemSelect = row.querySelector('.item-select');
-    const opsInput   = row.querySelector('.ops-input');
-    const unitInput  = row.querySelector('.unit-input');
+function syncRequestForm() {
+    const type = checkedValue('type');
+    const stockType = checkedValue('stock_item_type');
+    const isStock = type === 'stock';
 
-    if (tipe === 'bahan_baku') {
-        itemSelect.innerHTML = bahanOptions;
-        itemSelect.classList.remove('hidden');
-        opsInput.classList.add('hidden');
-    } else if (tipe === 'produk_jadi') {
-        itemSelect.innerHTML = produkOptions;
-        itemSelect.classList.remove('hidden');
-        opsInput.classList.add('hidden');
-        unitInput.value = 'pcs';
+    stockSection.classList.toggle('hidden', !isStock);
+    operationalSection.classList.toggle('hidden', isStock);
+    ingredientField.classList.toggle('hidden', !isStock || stockType !== 'bahan_baku');
+    finishedProductField.classList.toggle('hidden', !isStock || stockType !== 'produk_jadi');
+
+    let itemName = '';
+    let unit = unitInput.value;
+
+    if (isStock && stockType === 'bahan_baku') {
+        itemName = selectBahan.value;
+        unit = selectBahan.options[selectBahan.selectedIndex]?.dataset?.unit || unit;
+    } else if (isStock && stockType === 'produk_jadi') {
+        itemName = selectProduk.value;
+        unit = 'pcs';
     } else {
-        itemSelect.classList.add('hidden');
-        opsInput.classList.remove('hidden');
-        unitInput.value = 'unit';
+        itemName = itemNameOps.value;
+        unit = unit || 'unit';
     }
+
+    itemNameHidden.value = itemName;
+    if (unit) unitInput.value = unit;
+
+    summaryType.textContent = isStock ? (stockType === 'produk_jadi' ? 'Produk Jadi' : 'Bahan Baku') : 'Operasional';
+    summaryItem.textContent = isStock && stockType === 'bahan_baku'
+        ? (selectedText(selectBahan) || '-')
+        : (isStock ? (selectedText(selectProduk) || '-') : (itemName || '-'));
+    summaryQty.textContent = quantityInput.value ? `${quantityInput.value} ${unitInput.value || ''}` : '-';
 }
 
-function updateUnit(select) {
-    const opt   = select.options[select.selectedIndex];
-    const satuan = opt?.dataset?.satuan ?? '';
-    const row   = select.closest('.stok-row');
-    if (satuan) row.querySelector('.unit-input').value = satuan;
-}
-
-// Sebelum submit: gabungkan item_name dari field aktif
-document.querySelector('form').addEventListener('submit', function() {
-    document.querySelectorAll('.stok-row').forEach(row => {
-        const tipe     = row.querySelector('select[name$="[tipe]"]').value;
-        const opsInput = row.querySelector('.ops-input');
-        const selInput = row.querySelector('.item-select');
-        if (tipe === 'operasional') {
-            selInput.value = opsInput.value;
-        }
-    });
+[...typeInputs, ...stockTypeInputs].forEach(input => input.addEventListener('change', syncRequestForm));
+[selectBahan, selectProduk, itemNameOps, unitInput, quantityInput].forEach(input => {
+    input?.addEventListener('input', syncRequestForm);
+    input?.addEventListener('change', syncRequestForm);
 });
 
-document.querySelectorAll('.item-select').forEach(sel => {
-    sel.addEventListener('change', function() { updateUnit(this); });
-});
+document.getElementById('stockRequestForm').addEventListener('submit', syncRequestForm);
+document.addEventListener('DOMContentLoaded', syncRequestForm);
+syncRequestForm();
 </script>
 @endpush

@@ -19,7 +19,7 @@ class MenuController extends Controller
     // Tampilkan semua menu
     public function index()
     {
-        $menus = Menu::withTrashed()->latest()->get();
+        $menus = Menu::latest()->get();
         return view('manager.menus.index', compact('menus'));
     }
 
@@ -53,7 +53,7 @@ class MenuController extends Controller
         $stockType = ($request->category === 'minuman') ? 'bahan_baku' : 'kuantitas_jadi';
 
         // Upload gambar
-        $imagePath = null;
+        $imagePath = Menu::fallbackImageFor($request->name, $request->category);
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('menus', 'public');
         }
@@ -147,7 +147,7 @@ class MenuController extends Controller
         $stockType = ($request->category === 'minuman') ? 'bahan_baku' : 'kuantitas_jadi';
 
         if ($request->hasFile('image')) {
-            if ($menu->image) {
+            if ($menu->image && ! str_starts_with($menu->image, 'images/') && ! str_starts_with($menu->image, 'image/')) {
                 Storage::disk('public')->delete($menu->image);
             }
             $menu->image = $request->file('image')->store('menus', 'public');
@@ -160,7 +160,7 @@ class MenuController extends Controller
                 'category'     => $request->category,
                 'stock_type'   => $stockType,
                 'base_price'   => $request->base_price,
-                'image'        => $menu->image,
+                'image'        => $menu->image ?: Menu::fallbackImageFor($request->name, $request->category),
                 'is_available' => $request->has('is_available'),
             ]);
 
@@ -188,20 +188,22 @@ class MenuController extends Controller
         return view('manager.menus.recipe', compact('menu', 'menuIngredients'));
     }
 
-    // Soft delete menu
+    // Hapus permanen menu
     public function destroy(Menu $menu)
     {
-        $menu->delete();
-        return redirect()->route('manager.menus.index')
-                         ->with('success', 'Menu berhasil dinonaktifkan!');
-    }
+        DB::transaction(function () use ($menu) {
+            if ($menu->image && ! str_starts_with($menu->image, 'images/') && ! str_starts_with($menu->image, 'image/')) {
+                Storage::disk('public')->delete($menu->image);
+            }
 
-    // Restore menu
-    public function restore($id)
-    {
-        Menu::withTrashed()->findOrFail($id)->restore();
+            $menu->transactionItems()->update(['menu_id' => null]);
+            $menu->ingredients()->delete();
+            $menu->branchStocks()->delete();
+            $menu->forceDelete();
+        });
+
         return redirect()->route('manager.menus.index')
-                         ->with('success', 'Menu berhasil dipulihkan!');
+                         ->with('success', 'Menu berhasil dihapus permanen!');
     }
 
     // ── CRUD Ingredient (bahan baku) ─────────────────────────────────────────

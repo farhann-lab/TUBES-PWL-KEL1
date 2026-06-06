@@ -91,10 +91,10 @@
             <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50 smooth-transition">
                 <td class="py-4 px-6">
                     <p class="text-sm font-semibold text-gray-800">{{ $expense->title }}</p>
-                    <p class="text-xs text-gray-400">{{ $expense->createdBy->name }}</p>
+                    <p class="text-xs text-gray-400">{{ $expense->createdBy?->name ?? '—' }}</p>
                 </td>
                 <td class="py-4 px-6 text-sm text-gray-600">
-                    {{ $expense->branch->name }}
+                    {{ $expense->branch?->name ?? '—' }}
                 </td>
                 <td class="py-4 px-6 text-xs text-gray-600">
                     {{ $expense->category_label }}

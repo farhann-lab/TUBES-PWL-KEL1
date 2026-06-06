@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Menu extends Model
 {
@@ -47,6 +49,41 @@ class Menu extends Model
     public function isQuantityBased(): bool
     {
         return $this->stock_type === 'kuantitas_jadi';
+    }
+
+    public function getImageUrlAttribute(): string
+    {
+        if ($this->image) {
+            if (Str::startsWith($this->image, ['http://', 'https://', '/'])) {
+                return $this->image;
+            }
+
+            if (Str::startsWith($this->image, ['images/', 'image/'])) {
+                return asset($this->image);
+            }
+
+            return Storage::disk('public')->url($this->image);
+        }
+
+        return asset(self::fallbackImageFor($this->name, $this->category));
+    }
+
+    public static function fallbackImageFor(string $name, ?string $category = null): string
+    {
+        $name = Str::lower($name);
+
+        return match (true) {
+            Str::contains($name, ['matcha']) => 'images/menu/matcha.svg',
+            Str::contains($name, ['chocolate', 'coklat', 'brownies']) => 'images/menu/chocolate.svg',
+            Str::contains($name, ['lemon', 'tea']) => 'images/menu/tea.svg',
+            Str::contains($name, ['strawberry', 'taro', 'smoothie']) => 'images/menu/smoothie.svg',
+            Str::contains($name, ['latte', 'cappuccino', 'flat white', 'macchiato', 'kopi susu', 'oat milk']) => 'images/menu/latte.svg',
+            Str::contains($name, ['croissant', 'muffin', 'banana', 'cinnamon']) => 'images/menu/pastry.svg',
+            Str::contains($name, ['waffle']) => 'images/menu/waffle.svg',
+            Str::contains($name, ['cheesecake', 'tiramisu', 'panna', 'brulee']) => 'images/menu/cake.svg',
+            $category === 'makanan' || $category === 'snack' => 'images/menu/pastry.svg',
+            default => 'images/menu/coffee.svg',
+        };
     }
 
     public function availablePortions(int $branchId): int

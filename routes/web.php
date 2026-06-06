@@ -59,18 +59,14 @@ Route::middleware(['auth', 'role:manager', 'no-cache'])
         Route::get('/dashboard', [ManagerDashboard::class, 'index'])->name('dashboard');
 
         // Cabang
-        Route::resource('branches', BranchController::class);
+        Route::resource('branches', BranchController::class)->except(['show']);
         Route::post('branches/{id}/restore', [BranchController::class, 'restore'])
              ->name('branches.restore');
-        Route::post('branches/{branch}/add-kasir', [BranchController::class, 'addKasir'])
-            ->name('branches.add-kasir');
         Route::post('branches/{branch}/deactivate', [BranchController::class, 'deactivate'])
             ->name('branches.deactivate');
 
         // Menu
         Route::resource('menus', MenuController::class)->except(['show']);
-        Route::post('menus/{id}/restore', [MenuController::class, 'restore'])
-             ->name('menus.restore');
         Route::get('menus/{menu}/recipe', [MenuController::class, 'recipe'])
             ->name('menus.recipe');
 

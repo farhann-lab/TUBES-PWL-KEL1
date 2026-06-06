@@ -104,11 +104,11 @@
             @foreach($criticalStocks as $stock)
             <div class="flex items-center justify-between p-3 bg-red-50 rounded-2xl">
                 <div>
-                    <p class="text-sm font-semibold text-gray-800">{{ $stock['name'] }}</p>
-                    <p class="text-xs text-gray-500">{{ ucfirst($stock['category']) }} - {{ $stock['status'] }}</p>
+                    <p class="text-sm font-semibold text-gray-800">{{ data_get($stock, 'name') }}</p>
+                    <p class="text-xs text-gray-500">{{ ucfirst(data_get($stock, 'category', '-')) }}</p>
                 </div>
                 <span class="text-sm font-bold text-red-600">
-                    {{ number_format($stock['remaining'], 0, ',', '.') }} {{ $stock['unit'] }}
+                    {{ data_get($stock, 'remaining', 0) }} {{ data_get($stock, 'unit', 'sisa') }}
                 </span>
             </div>
             @endforeach
@@ -187,7 +187,7 @@
                     <td class="py-3 px-6 text-sm font-semibold text-gray-800">
                         {{ $trx->invoice_number }}
                     </td>
-                    <td class="py-3 px-6 text-sm text-gray-600">{{ $trx->kasir->name }}</td>
+                    <td class="py-3 px-6 text-sm text-gray-600">{{ $trx->kasir->name ?? $trx->kasir_nama_display ?? '-' }}</td>
                     <td class="py-3 px-6 text-sm text-gray-600">{{ $trx->items->count() }} item</td>
                     <td class="py-3 px-6 text-sm font-bold text-elco-coffee">
                         Rp {{ number_format($trx->total, 0, ',', '.') }}
@@ -264,34 +264,6 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Toggle field nama item berdasarkan tipe
-document.querySelectorAll('input[name="type"]').forEach(radio => {
-    radio.addEventListener('change', function() {
-        const isStock = this.value === 'stock';
-        document.getElementById('stockSelect').classList.toggle('hidden', !isStock);
-        document.getElementById('operationalInput').classList.toggle('hidden', isStock);
-
-        // Sync nilai ke field yang aktif
-        document.getElementById('itemNameSelect').required = isStock;
-        document.getElementById('itemNameOps').required    = !isStock;
-    });
-});
-
-// Sebelum submit, satukan nilai item_name
-document.querySelector('form').addEventListener('submit', function(e) {
-    const type = document.querySelector('input[name="type"]:checked')?.value;
-    if (type === 'operational') {
-        // Buat hidden input dengan nama item_name
-        const val = document.getElementById('itemNameOps').value;
-        const hidden = document.createElement('input');
-        hidden.type  = 'hidden';
-        hidden.name  = 'item_name';
-        hidden.value = val;
-        this.appendChild(hidden);
-    }
-});
-</script>
-<script>
 const labels  = @json($labels);
 const income  = @json($incomeChart);
 const expense = @json($expenseChart);
@@ -333,15 +305,22 @@ new Chart(document.getElementById('branchChart'), {
             }
         },
         scales: {
-            y: {
-                ticks: {
-                    callback: val => 'Rp ' + (val / 1000000).toFixed(1) + 'jt'
-                },
-                grid: { color: '#f3f4f6' }
-            },
-            x: { grid: { display: false } }
-        }
+    y: {
+        ticks: {
+            color: 'rgba(255, 244, 232, 0.90)',
+            font: { size: 12, weight: '600' },
+            callback: val => 'Rp ' + (val / 1000000).toFixed(1) + 'jt'
+        },
+        grid: { color: 'rgba(255, 244, 232, 0.22)' }
+    },
+    x: {
+        ticks: {
+            color: 'rgba(255, 244, 232, 0.90)',
+            font: { size: 12, weight: '600' }
+        },
+        grid: { display: false }
     }
+}
 });
 
 // ── Chart Laba ────────────────────────────────────────────
@@ -350,16 +329,19 @@ new Chart(document.getElementById('profitChart'), {
     data: {
         labels,
         datasets: [{
-            label: 'Laba Bersih',
-            data: profit,
-            borderColor: '#5C3D2E',
-            backgroundColor: '#5C3D2E15',
-            borderWidth: 2.5,
-            pointBackgroundColor: '#5C3D2E',
-            pointRadius: 4,
-            tension: 0.4,
-            fill: true,
-        }]
+    label: 'Laba Bersih',
+    data: profit,
+    borderColor: '#22d3ee',
+    backgroundColor: 'rgba(34, 211, 238, 0.16)',
+    borderWidth: 3,
+    pointBackgroundColor: '#fff4e8',
+    pointBorderColor: '#22d3ee',
+    pointBorderWidth: 2,
+    pointRadius: 4,
+    pointHoverRadius: 7,
+    tension: 0.4,
+    fill: true,
+}]
     },
     options: {
         responsive: true,
@@ -373,15 +355,22 @@ new Chart(document.getElementById('profitChart'), {
             }
         },
         scales: {
-            y: {
-                ticks: {
-                    callback: val => 'Rp ' + (val / 1000000).toFixed(1) + 'jt'
-                },
-                grid: { color: '#f3f4f6' }
-            },
-            x: { grid: { display: false } }
-        }
+    y: {
+        ticks: {
+            color: 'rgba(255, 244, 232, 0.90)',
+            font: { size: 12, weight: '600' },
+            callback: val => 'Rp ' + (val / 1000000).toFixed(1) + 'jt'
+        },
+        grid: { color: 'rgba(255, 244, 232, 0.22)' }
+    },
+    x: {
+        ticks: {
+            color: 'rgba(255, 244, 232, 0.90)',
+            font: { size: 12, weight: '600' }
+        },
+        grid: { display: false }
     }
+}
 });
 </script>
 <script>

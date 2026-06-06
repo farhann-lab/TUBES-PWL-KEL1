@@ -6,83 +6,1352 @@
 /* Custom Styles ELCO Dashboard */
 body { 
     background-color: #F8F9FA; 
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    letter-spacing: 0;
 }
 
-/* ─── ELCO Sidebar — Glassmorphism ─── */
+button,
+a,
+input,
+select,
+textarea {
+    letter-spacing: 0;
+}
 
-.elco-sidebar {
-    background: rgba(255, 255, 255, 0.35);
-    backdrop-filter: blur(24px) saturate(1.6);
-    -webkit-backdrop-filter: blur(24px) saturate(1.6);
-    border-right: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 0 28px 28px 0;
+.bg-emerald-600 {
+    background: linear-gradient(135deg, #0f766e, #14b8a6) !important;
+}
+
+.hover\:bg-emerald-700:hover {
+    background: linear-gradient(135deg, #0d5f59, #0f9488) !important;
+}
+
+.bg-orange-500,
+.bg-orange-600 {
+    background: linear-gradient(135deg, #9a5c24, #c37a3d, #f0b56d) !important;
+}
+
+.hover\:bg-orange-600:hover,
+.hover\:bg-orange-100:hover {
+    background: rgba(240, 181, 109, 0.24) !important;
+}
+
+.bg-red-500,
+.bg-red-600 {
+    background: linear-gradient(135deg, #b42318, #ef6358) !important;
+}
+
+.hover\:bg-red-600:hover,
+.hover\:bg-red-700:hover {
+    background: linear-gradient(135deg, #991b1b, #dc2626) !important;
+}
+
+.text-purple-600 {
+    color: #a78bfa !important;
+}
+
+/* ─────────────────────────────────────────
+   BOTTOM NAV — fit-content, bersih
+───────────────────────────────────────── */
+.elco-bottom-nav-shell {
+    position: fixed;
+    left: 50%;
+    bottom: max(20px, env(safe-area-inset-bottom));
+    z-index: 60;
+    transform: translateX(-50%);
+    pointer-events: auto;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+
+    /* FIT ke konten, tidak pernah overflow layar */
+    width: fit-content;
+    max-width: calc(100vw - 32px);
+}
+
+/* Glow ambient di belakang nav */
+.elco-bottom-nav-shell::before {
+    content: "";
+    position: absolute;
+    inset: -22px 6%;
+    z-index: -1;
+    border-radius: 999px;
+    background:
+        radial-gradient(circle at 22% 50%, rgba(45, 212, 191, 0.20), transparent 42%),
+        radial-gradient(circle at 78% 50%, rgba(240, 181, 109, 0.28), transparent 46%);
+    filter: blur(32px);
+    opacity: 0.78;
+}
+
+/* Hapus semua modifier lebar khusus role — fit-content sudah cukup */
+.elco-bottom-nav-shell-admin,
+.elco-bottom-nav-shell-manager,
+.elco-bottom-nav-shell-kasir {
+    width: fit-content;
+    max-width: calc(100vw - 32px);
+}
+
+.elco-bottom-nav {
+    display: flex;
+    align-items: center;
+    width: fit-content;         /* ikuti total lebar item */
+    min-height: 80px;
+    padding: 12px 14px;
+    gap: 11px;
+    overflow-x: visible;
+    overflow-y: hidden;
+    border-radius: 999px;
+    pointer-events: auto;
+    background:
+        linear-gradient(135deg, rgba(255, 246, 235, 0.18), rgba(255, 246, 235, 0.06)),
+        radial-gradient(circle at 18% 18%, rgba(45, 212, 191, 0.16), transparent 38%),
+        radial-gradient(circle at 78% 18%, rgba(240, 181, 109, 0.24), transparent 42%),
+        linear-gradient(135deg, rgba(15, 10, 8, 0.91), rgba(58, 35, 24, 0.86)) !important;
+    border: 1px solid rgba(255, 238, 220, 0.22) !important;
     box-shadow:
-        4px 0 32px rgba(100, 70, 40, 0.10),
-        inset 1px 0 0 rgba(255, 255, 255, 0.6);
+        0 24px 60px rgba(0, 0, 0, 0.42),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.22) !important;
+    backdrop-filter: blur(26px) saturate(160%);
+    -webkit-backdrop-filter: blur(26px) saturate(160%);
+    scroll-snap-type: none;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    touch-action: pan-x manipulation;
 }
 
-.elco-toggle-btn {
-    background: rgba(255, 255, 255, 0.55);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.7);
-    border-radius: 50%;
-    box-shadow: 0 2px 12px rgba(100, 70, 40, 0.18);
-    transition: background 0.2s ease, box-shadow 0.2s ease;
-}
-.elco-toggle-btn:hover {
-    background: rgba(255, 255, 255, 0.75);
-    box-shadow: 4px 0 18px rgba(100, 70, 40, 0.22);
+.elco-bottom-nav::-webkit-scrollbar {
+    display: none;
 }
 
-.elco-nav-active {
-    background: rgba(255, 255, 255, 0.65) !important;
-    color: #3d1f08 !important;
+/* Role admin/manager: item mulai dari kiri */
+.elco-bottom-nav-admin,
+.elco-bottom-nav-manager {
+    justify-content: flex-start;
+}
+
+/* Role kasir: item di tengah */
+.elco-bottom-nav-kasir {
+    justify-content: center;
+}
+
+.elco-bottom-nav-item {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    flex: 0 0 54px;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    height: 54px;
+    min-width: 54px;
+    padding-inline: 15px;
+    border-radius: 999px;
+    color: rgba(255, 246, 235, 0.60) !important;
+    text-decoration: none !important;
+    border: 1px solid transparent !important;
+    background: rgba(255, 246, 235, 0.055) !important;
+    scroll-snap-align: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition:
+        flex-basis 360ms cubic-bezier(0.4, 0, 0.2, 1),
+        min-width 360ms cubic-bezier(0.4, 0, 0.2, 1),
+        gap 260ms ease,
+        background 260ms ease,
+        color 260ms ease,
+        box-shadow 260ms ease,
+        transform 220ms ease;
+}
+
+.elco-bottom-nav-item:hover {
+    color: #fff6eb !important;
+    background: rgba(255, 246, 235, 0.13) !important;
+    border-color: rgba(255, 238, 220, 0.14) !important;
+    transform: translateY(-2px);
+}
+
+.elco-bottom-nav-item i {
+    pointer-events: none;
+    flex: 0 0 auto;
+    font-size: 23px;
+    line-height: 1;
+    color: currentColor !important;
+}
+
+.elco-bottom-nav-item span {
+    pointer-events: none;
+    display: inline-block;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    color: currentColor !important;
+    font-size: 13px;
+    font-weight: 700;
+    transform: translateX(-4px);
+    transition:
+        max-width 360ms cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 220ms ease,
+        transform 260ms ease;
+}
+
+.elco-bottom-nav-item.is-active {
+    flex-basis: 148px;
+    min-width: 148px;
+    gap: 12px;
+    color: #fffdf8 !important;
+    background:
+        linear-gradient(135deg, rgba(45, 212, 191, 0.32), rgba(240, 181, 109, 0.30)),
+        rgba(255, 246, 235, 0.14) !important;
+    border-color: rgba(255, 238, 220, 0.28) !important;
+    box-shadow:
+        0 14px 28px rgba(0, 0, 0, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+.elco-bottom-nav-item.is-active span {
+    max-width: 112px;
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.elco-bottom-nav-form {
+    display: inline-flex;
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+.elco-bottom-nav-danger:hover {
+    color: #ffd5d0 !important;
+    background: rgba(255, 123, 110, 0.14) !important;
+}
+
+@media (hover: none), (pointer: coarse) {
+    .elco-bottom-nav-item:hover {
+        transform: none;
+    }
+
+    .elco-bottom-nav-item:active {
+        color: #fff6eb !important;
+        background: rgba(255, 246, 235, 0.16) !important;
+        transform: scale(0.97);
+    }
+}
+
+
+/* ─────────────────────────────────────────
+   TOPBAR — fit-content, profile proporsional
+───────────────────────────────────────── */
+.elco-topbar-shell {
+    position: sticky;
+    top: max(18px, env(safe-area-inset-top));
+    z-index: 50;
+    padding-inline: clamp(1.5rem, 4vw, 4rem);
+    pointer-events: none;
+    background: transparent;
+}
+
+/* Glow ambient */
+.elco-topbar-shell::before,
+.elco-topbar-shell::after {
+    content: "";
+    position: absolute;
+    top: -28px;
+    bottom: -28px;
+    z-index: -1;
+    filter: blur(34px);
+    opacity: 0.72;
+    pointer-events: none;
+}
+.elco-topbar-shell::before {
+    left: max(18px, 4vw);
+    width: 42vw;
+    background: radial-gradient(circle at center, rgba(45, 212, 191, 0.18), transparent 64%);
+}
+.elco-topbar-shell::after {
+    right: max(18px, 4vw);
+    width: 50vw;
+    background: radial-gradient(circle at center, rgba(240, 181, 109, 0.26), transparent 68%);
+}
+
+.elco-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    /* Fit ke konten, max ikut lebar shell */
+    width: fit-content;
+    max-width: 100%;
+    margin-inline: auto;
+
+    min-height: 72px;
+    padding: 11px 16px 11px 28px;
+    gap: 20px;
+    border-radius: 999px;
+    pointer-events: auto;
+    background:
+        linear-gradient(135deg, rgba(255, 246, 235, 0.18), rgba(255, 246, 235, 0.06)),
+        radial-gradient(circle at 16% 50%, rgba(45, 212, 191, 0.11), transparent 36%),
+        radial-gradient(circle at 76% 50%, rgba(240, 181, 109, 0.23), transparent 44%),
+        linear-gradient(135deg, rgba(18, 12, 10, 0.90), rgba(72, 44, 30, 0.84));
+    border: 1px solid rgba(255, 238, 220, 0.22);
+    box-shadow:
+        0 24px 58px rgba(0, 0, 0, 0.42),
+        inset 0 1px 0 rgba(255, 255, 255, 0.17),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.20);
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+}
+
+/* Judul + tanggal */
+.elco-topbar-left {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 0 4px;
+    flex: 0 0 auto;             /* jangan melar, cukup lebar teks */
+}
+
+.elco-topbar-title {
+    font-size: clamp(17px, 1.6vw, 22px);
+    font-weight: 700;
+    color: #fffdf8;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.elco-topbar-date {
+    font-size: 12px;
+    color: rgba(255, 246, 235, 0.55);
+    line-height: 1;
+    margin: 0;
+}
+
+/* Kanan */
+.elco-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 auto;
+}
+
+.elco-topbar-divider {
+    width: 1px;
+    height: 28px;
+    background: rgba(255, 238, 220, 0.14);
+    flex-shrink: 0;
+}
+
+/* Bell button */
+.elco-topbar-icon-btn {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 246, 235, 0.09);
+    border: 1px solid rgba(255, 238, 220, 0.16);
+    color: rgba(255, 246, 235, 0.58);
+    cursor: pointer;
+    font-size: 19px;
+    flex-shrink: 0;
+    transition: background 220ms, color 220ms, transform 180ms;
+}
+.elco-topbar-icon-btn:hover {
+    background: rgba(255, 246, 235, 0.16);
+    color: #fffdf8;
+    transform: translateY(-1px);
+}
+
+.elco-topbar-badge {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #b42318, #ef6358);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid rgba(18, 12, 10, 0.8);
+}
+
+/* Profile pill — proporsional, tidak fixed-width */
+.elco-topbar-profile-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 7px 16px 7px 7px;
+    border-radius: 999px;
+    background: rgba(255, 246, 235, 0.10);
+    border: 1px solid rgba(255, 238, 220, 0.18);
+    cursor: pointer;
+    flex-shrink: 0;
+    /* Tidak ada min-width — menyesuaikan teks nama user */
+    transition: background 220ms, transform 180ms;
+}
+.elco-topbar-profile-pill:hover {
+    background: rgba(255, 246, 235, 0.16);
+    transform: translateY(-1px);
+}
+
+.elco-topbar-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #8b542e, #c37a3d);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff6eb;
+    flex-shrink: 0;
+}
+
+.elco-topbar-profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-align: left;
+    min-width: 0;
+}
+
+.elco-topbar-profile-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fffdf8;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.elco-topbar-profile-role {
+    font-size: 11px;
+    color: rgba(255, 246, 235, 0.52);
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.elco-topbar-caret {
+    font-size: 12px;
+    color: rgba(255, 246, 235, 0.35);
+    flex-shrink: 0;
+}
+
+/* Dropdown */
+.elco-topbar-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 10px);
+    min-width: 260px;
+    border-radius: 20px;
+    overflow: hidden;
+    background:
+        linear-gradient(135deg, rgba(255, 246, 235, 0.12), rgba(255, 246, 235, 0.05)),
+        linear-gradient(135deg, rgba(18, 12, 10, 0.94), rgba(55, 33, 23, 0.92));
+    border: 1px solid rgba(255, 238, 220, 0.16);
+    box-shadow:
+        0 24px 56px rgba(0, 0, 0, 0.52),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10);
+    backdrop-filter: blur(32px) saturate(160%);
+    -webkit-backdrop-filter: blur(32px) saturate(160%);
+    z-index: 60;
+}
+.elco-topbar-dropdown-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255, 238, 220, 0.10);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.elco-topbar-dropdown-header p {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fffdf8;
+    margin: 0;
+}
+.elco-topbar-dropdown-header span {
+    font-size: 11px;
+    color: rgba(255, 246, 235, 0.38);
+}
+.elco-topbar-dropdown-body {
+    max-height: 280px;
+    overflow-y: auto;
+}
+.elco-topbar-notif-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    width: 100%;
+    text-decoration: none;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: background 200ms;
+    text-align: left;
+}
+.elco-topbar-notif-item:hover {
+    background: rgba(255, 246, 235, 0.07);
+}
+.elco-topbar-notif-item > div:nth-child(2) p {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255, 246, 235, 0.88);
+    margin: 0 0 2px;
+}
+.elco-topbar-notif-item > div:nth-child(2) span {
+    font-size: 11px;
+    color: rgba(255, 246, 235, 0.38);
+}
+.elco-topbar-notif-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 15px;
+}
+.elco-topbar-notif-count {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    flex-shrink: 0;
+}
+.elco-topbar-logout { color: #f87171; }
+.elco-topbar-logout > div:nth-child(2) p { color: #f87171 !important; }
+.elco-topbar-notif-empty {
+    padding: 32px 16px;
+    text-align: center;
+    color: rgba(255, 246, 235, 0.35);
+    font-size: 13px;
+}
+.elco-topbar-notif-empty i {
+    font-size: 28px;
+    color: rgba(45, 212, 191, 0.7);
+    display: block;
+    margin-bottom: 8px;
+}
+
+
+/* ─────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────── */
+@media (max-width: 640px) {
+    /* Bottom nav */
+    .elco-bottom-nav-shell,
+    .elco-bottom-nav-shell-admin,
+    .elco-bottom-nav-shell-manager,
+    .elco-bottom-nav-shell-kasir {
+        bottom: max(12px, env(safe-area-inset-bottom));
+        max-width: calc(100vw - 20px);
+    }
+    .elco-bottom-nav {
+        min-height: 66px;
+        padding: 8px;
+        gap: 7px;
+        max-width: calc(100vw - 20px);
+        overflow-x: auto;
+    }
+    .elco-bottom-nav-item {
+        flex-basis: 48px;
+        min-width: 48px;
+        height: 48px;
+        padding-inline: 14px;
+    }
+    .elco-bottom-nav-item.is-active,
+    .elco-bottom-nav-admin .elco-bottom-nav-item.is-active,
+    .elco-bottom-nav-manager .elco-bottom-nav-item.is-active {
+        flex-basis: 128px;
+        min-width: 128px;
+    }
+    .elco-bottom-nav-item span {
+        font-size: 12px;
+    }
+
+    /* Topbar */
+    .elco-topbar-shell {
+        padding-inline: 12px;
+        top: max(10px, env(safe-area-inset-top));
+    }
+    .elco-topbar {
+        min-height: 60px;
+        padding: 8px 10px 8px 16px;
+        gap: 10px;
+    }
+    .elco-topbar-date { display: none; }
+    .elco-topbar-profile-name,
+    .elco-topbar-profile-role,
+    .elco-topbar-caret { display: none; }
+    .elco-topbar-profile-pill { padding: 5px; }
+    .elco-topbar-avatar { width: 36px; height: 36px; }
+}
+
+/* Reference match: elco_navbar_glassmorphism.html */
+.elco-topbar-shell {
+    top: max(16px, env(safe-area-inset-top));
+    padding-inline: 16px;
+}
+
+.elco-topbar-shell::before,
+.elco-topbar-shell::after {
+    opacity: 0.56;
+    filter: blur(26px);
+}
+
+.elco-topbar-shell::before {
+    left: 22%;
+    width: 28vw;
+    background: radial-gradient(circle at center, rgba(45, 212, 191, 0.13), transparent 62%);
+}
+
+.elco-topbar-shell::after {
+    right: 22%;
+    width: 34vw;
+    background: radial-gradient(circle at center, rgba(240, 181, 109, 0.18), transparent 64%);
+}
+
+.elco-topbar {
+    width: fit-content;
+    max-width: 100%;
+    min-height: 68px;
+    margin-inline: auto;
+    padding: 10px 10px 10px 20px;
+    gap: 16px;
+    background:
+        linear-gradient(135deg, rgba(255, 246, 235, 0.13), rgba(255, 246, 235, 0.05)),
+        radial-gradient(circle at 15% 50%, rgba(240, 181, 109, 0.18), transparent 40%),
+        linear-gradient(135deg, rgba(18, 12, 10, 0.84), rgba(55, 33, 23, 0.80)) !important;
+    border: 1px solid rgba(255, 238, 220, 0.18) !important;
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.40),
+        inset 0 1px 0 rgba(255, 255, 255, 0.14),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.20) !important;
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+}
+
+.elco-topbar-left {
+    gap: 1px;
+    padding: 0 4px;
+}
+
+.elco-topbar-title {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.elco-topbar-date {
+    font-size: 11.5px;
+    color: rgba(255, 246, 235, 0.45);
+}
+
+.elco-topbar-right {
+    gap: 8px;
+}
+
+.elco-topbar-divider {
+    height: 28px;
+    margin-inline: 2px;
+    background: rgba(255, 238, 220, 0.14);
+}
+
+.elco-topbar-icon-btn {
+    width: 42px;
+    height: 42px;
+    font-size: 18px;
+    background: rgba(255, 246, 235, 0.07);
+    border-color: rgba(255, 238, 220, 0.12);
+    color: rgba(255, 246, 235, 0.60);
+}
+
+.elco-topbar-icon-btn:hover {
+    background: rgba(255, 246, 235, 0.14);
+    color: #fffdf8;
+    transform: none;
+}
+
+.elco-topbar-profile-pill {
+    gap: 10px;
+    padding: 5px 14px 5px 5px;
+    background: rgba(255, 246, 235, 0.07);
+    border-color: rgba(255, 238, 220, 0.14);
+}
+
+.elco-topbar-profile-pill:hover {
+    background: rgba(255, 246, 235, 0.13);
+    transform: none;
+}
+
+.elco-topbar-avatar {
+    width: 34px;
+    height: 34px;
+    font-size: 13px;
+    background: linear-gradient(135deg, #6b3a1f, #c37a3d);
+}
+
+.elco-topbar-profile-info {
+    gap: 1px;
+}
+
+.elco-topbar-profile-name {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.elco-topbar-profile-role {
+    font-size: 10.5px;
+    color: rgba(255, 246, 235, 0.44);
+}
+
+.elco-topbar-caret {
+    margin-left: 2px;
+    font-size: 12px;
+    color: rgba(255, 246, 235, 0.35);
+}
+
+@media (max-width: 640px) {
+    .elco-topbar-shell {
+        padding-inline: 12px;
+        top: max(10px, env(safe-area-inset-top));
+    }
+
+    .elco-topbar {
+        min-height: 60px;
+        padding: 8px 8px 8px 16px;
+        gap: 10px;
+    }
+
+    .elco-topbar-title {
+        font-size: 15px;
+    }
+
+    .elco-topbar-date {
+        display: none;
+    }
+
+    .elco-topbar-profile-name,
+    .elco-topbar-profile-role,
+    .elco-topbar-caret {
+        display: none;
+    }
+
+    .elco-topbar-profile-pill {
+        padding: 5px;
+    }
+
+    .elco-topbar-avatar {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+/* Vite-only final topbar override: match elco_navbar_glassmorphism.html */
+body > main > header.elco-topbar-shell,
+.manager-main > header.elco-topbar-shell,
+.kasir-main > header.elco-topbar-shell {
+    position: sticky !important;
+    top: max(16px, env(safe-area-inset-top)) !important;
+    z-index: 50 !important;
+    padding: 0 16px !important;
+    pointer-events: none !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body > main > header.elco-topbar-shell::before,
+.manager-main > header.elco-topbar-shell::before,
+.kasir-main > header.elco-topbar-shell::before {
+    content: "" !important;
+    position: absolute !important;
+    inset: -12px 24% !important;
+    z-index: -1 !important;
+    border-radius: 999px !important;
+    background: radial-gradient(circle, rgba(240, 181, 109, 0.16), transparent 62%) !important;
+    filter: blur(22px) !important;
+    opacity: 0.75 !important;
+    pointer-events: none !important;
+}
+
+body > main > header.elco-topbar-shell > .elco-topbar,
+.manager-main > header.elco-topbar-shell > .elco-topbar,
+.kasir-main > header.elco-topbar-shell > .elco-topbar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: fit-content !important;
+    max-width: 100% !important;
+    min-height: 68px !important;
+    margin-inline: auto !important;
+    padding: 10px 10px 10px 20px !important;
+    gap: 16px !important;
+    border-radius: 999px !important;
+    pointer-events: auto !important;
+    background:
+        linear-gradient(135deg, rgba(255, 246, 235, 0.13), rgba(255, 246, 235, 0.05)),
+        radial-gradient(circle at 15% 50%, rgba(240, 181, 109, 0.18), transparent 40%),
+        linear-gradient(135deg, rgba(18, 12, 10, 0.84), rgba(55, 33, 23, 0.80)) !important;
+    border: 1px solid rgba(255, 238, 220, 0.18) !important;
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.40),
+        inset 0 1px 0 rgba(255, 255, 255, 0.14),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.20) !important;
+    backdrop-filter: blur(28px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(160%) !important;
+}
+
+.elco-topbar-shell .elco-topbar-left {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1px !important;
+    padding: 0 4px !important;
+    flex: 0 0 auto !important;
+}
+
+.elco-topbar-shell .elco-topbar-title {
+    margin: 0 !important;
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    letter-spacing: 0 !important;
+    color: #fffdf8 !important;
+}
+
+.elco-topbar-shell .elco-topbar-date {
+    margin: 0 !important;
+    font-size: 11.5px !important;
+    line-height: 1 !important;
+    color: rgba(255, 246, 235, 0.45) !important;
+}
+
+.elco-topbar-shell .elco-topbar-right {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex: 0 0 auto !important;
+}
+
+.elco-topbar-shell .elco-topbar-divider {
+    width: 1px !important;
+    height: 28px !important;
+    margin: 0 2px !important;
+    background: rgba(255, 238, 220, 0.14) !important;
+    flex-shrink: 0 !important;
+}
+
+body > main > header.elco-topbar-shell button.elco-topbar-icon-btn,
+.manager-main > header.elco-topbar-shell button.elco-topbar-icon-btn,
+.kasir-main > header.elco-topbar-shell button.elco-topbar-icon-btn {
+    position: relative !important;
+    width: 42px !important;
+    height: 42px !important;
+    padding: 0 !important;
+    border-radius: 999px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(255, 246, 235, 0.07) !important;
+    border: 1px solid rgba(255, 238, 220, 0.12) !important;
+    color: rgba(255, 246, 235, 0.60) !important;
+    cursor: pointer !important;
+    font-size: 18px !important;
+    flex-shrink: 0 !important;
+    box-shadow: none !important;
+    transition: background 220ms, color 220ms !important;
+}
+
+body > main > header.elco-topbar-shell button.elco-topbar-icon-btn:hover,
+.manager-main > header.elco-topbar-shell button.elco-topbar-icon-btn:hover,
+.kasir-main > header.elco-topbar-shell button.elco-topbar-icon-btn:hover {
+    background: rgba(255, 246, 235, 0.14) !important;
+    color: #fffdf8 !important;
+}
+
+body > main > header.elco-topbar-shell button.elco-topbar-profile-pill,
+.manager-main > header.elco-topbar-shell button.elco-topbar-profile-pill,
+.kasir-main > header.elco-topbar-shell button.elco-topbar-profile-pill {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 5px 14px 5px 5px !important;
+    border-radius: 999px !important;
+    background: rgba(255, 246, 235, 0.07) !important;
+    border: 1px solid rgba(255, 238, 220, 0.14) !important;
+    color: #fffdf8 !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
+    box-shadow: none !important;
+    transition: background 220ms !important;
+}
+
+body > main > header.elco-topbar-shell button.elco-topbar-profile-pill:hover,
+.manager-main > header.elco-topbar-shell button.elco-topbar-profile-pill:hover,
+.kasir-main > header.elco-topbar-shell button.elco-topbar-profile-pill:hover {
+    background: rgba(255, 246, 235, 0.13) !important;
+}
+
+.elco-topbar-shell .elco-topbar-avatar {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 999px !important;
+    background: linear-gradient(135deg, #6b3a1f, #c37a3d) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: #fff6eb !important;
+    flex-shrink: 0 !important;
+}
+
+.elco-topbar-shell .elco-topbar-profile-info {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1px !important;
+    text-align: left !important;
+}
+
+.elco-topbar-shell .elco-topbar-profile-name {
+    font-size: 13px !important;
     font-weight: 600 !important;
-    box-shadow: 0 4px 20px rgba(100, 70, 40, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    color: #fffdf8 !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
 }
 
-.elco-nav-item:hover {
-    background: rgba(255, 255, 255, 0.45);
-    color: #4a2c12;
-    box-shadow: 0 2px 12px rgba(100, 70, 40, 0.08);
+.elco-topbar-shell .elco-topbar-profile-role {
+    font-size: 10.5px !important;
+    color: rgba(255, 246, 235, 0.44) !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
 }
 
-.elco-sidebar-transition {
-    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+.elco-topbar-shell .elco-topbar-caret {
+    margin-left: 2px !important;
+    font-size: 12px !important;
+    color: rgba(255, 246, 235, 0.35) !important;
+    flex-shrink: 0 !important;
 }
 
-.elco-label-transition {
-    transition: max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
-}
-
-.elco-section-collapse {
-    transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease;
-}
-
-.elco-logout-btn {
-    background: linear-gradient(135deg, #5C3A1E 0%, #3d2310 100%);
-    box-shadow: 0 4px 16px rgba(60, 30, 10, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-    transition: box-shadow 0.2s ease, background 0.2s ease;
-}
-.elco-logout-btn:hover {
-    background: linear-gradient(135deg, #6B4A2A 0%, #4a2c12 100%);
-    box-shadow: 0 6px 20px rgba(60, 30, 10, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.hide-scrollbar { scrollbar-width: none; }
-.hide-scrollbar::-webkit-scrollbar { display: none; }
-
-@layer utilities {
-    .smooth-transition { 
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+@media (max-width: 640px) {
+    body > main > header.elco-topbar-shell,
+    .manager-main > header.elco-topbar-shell,
+    .kasir-main > header.elco-topbar-shell {
+        top: max(10px, env(safe-area-inset-top)) !important;
+        padding-inline: 10px !important;
     }
-    .hide-scrollbar::-webkit-scrollbar { 
-        display: none; 
+
+    body > main > header.elco-topbar-shell > .elco-topbar,
+    .manager-main > header.elco-topbar-shell > .elco-topbar,
+    .kasir-main > header.elco-topbar-shell > .elco-topbar {
+        min-height: 60px !important;
+        padding: 8px 8px 8px 16px !important;
+        gap: 10px !important;
     }
-    .hide-scrollbar { 
-        -ms-overflow-style: none; 
-        scrollbar-width: none; 
+
+    .elco-topbar-shell .elco-topbar-title {
+        font-size: 15px !important;
+    }
+
+    .elco-topbar-shell .elco-topbar-date,
+    .elco-topbar-shell .elco-topbar-profile-name,
+    .elco-topbar-shell .elco-topbar-profile-role,
+    .elco-topbar-shell .elco-topbar-caret {
+        display: none !important;
+    }
+
+    body > main > header.elco-topbar-shell button.elco-topbar-profile-pill,
+    .manager-main > header.elco-topbar-shell button.elco-topbar-profile-pill,
+    .kasir-main > header.elco-topbar-shell button.elco-topbar-profile-pill {
+        padding: 5px !important;
+    }
+
+    .elco-topbar-shell .elco-topbar-avatar {
+        width: 36px !important;
+        height: 36px !important;
+    }
+}
+
+/* UI/UX review pass: spacing, color, text hierarchy, cards, forms */
+:root {
+    --elco-ui-text: #fff6eb;
+    --elco-ui-soft: rgba(255, 246, 235, 0.74);
+    --elco-ui-muted: rgba(255, 246, 235, 0.54);
+    --elco-ui-border: rgba(255, 238, 220, 0.18);
+    --elco-ui-card: rgba(255, 246, 235, 0.13);
+    --elco-ui-card-strong: rgba(255, 246, 235, 0.18);
+    --elco-ui-accent: #f0b56d;
+    --elco-ui-teal: #2dd4bf;
+    --elco-ui-danger: #ff7b6e;
+}
+
+.manager-main .manager-content,
+.kasir-main .kasir-content,
+body > main > .flex-1.overflow-y-auto {
+    padding-inline: clamp(2rem, 4.5vw, 4.75rem) !important;
+    padding-top: clamp(2.25rem, 3.25vw, 3.5rem) !important;
+    padding-bottom: clamp(8.25rem, 9vw, 10rem) !important;
+    color: var(--elco-ui-text) !important;
+}
+
+.manager-main .manager-content > * + *,
+.kasir-main .kasir-content > * + *,
+body > main > .flex-1.overflow-y-auto > * + * {
+    margin-top: clamp(1.75rem, 2.6vw, 2.5rem) !important;
+}
+
+.manager-main .manager-content .grid,
+.kasir-main .kasir-content .grid,
+body > main > .flex-1.overflow-y-auto .grid {
+    gap: clamp(1.35rem, 2.4vw, 2.25rem) !important;
+}
+
+.manager-main .manager-content h1,
+.manager-main .manager-content h2,
+.manager-main .manager-content h3,
+.manager-main .manager-content h4,
+.kasir-main .kasir-content h1,
+.kasir-main .kasir-content h2,
+.kasir-main .kasir-content h3,
+.kasir-main .kasir-content h4,
+body > main > .flex-1.overflow-y-auto h1,
+body > main > .flex-1.overflow-y-auto h2,
+body > main > .flex-1.overflow-y-auto h3,
+body > main > .flex-1.overflow-y-auto h4 {
+    color: var(--elco-ui-text) !important;
+    letter-spacing: 0 !important;
+    line-height: 1.18 !important;
+}
+
+.manager-main .manager-content h2,
+.kasir-main .kasir-content h2,
+body > main > .flex-1.overflow-y-auto h2 {
+    font-size: clamp(1.25rem, 1.35vw, 1.65rem) !important;
+}
+
+.manager-main .manager-content p,
+.manager-main .manager-content span,
+.manager-main .manager-content label,
+.kasir-main .kasir-content p,
+.kasir-main .kasir-content span,
+.kasir-main .kasir-content label,
+body > main > .flex-1.overflow-y-auto p,
+body > main > .flex-1.overflow-y-auto span,
+body > main > .flex-1.overflow-y-auto label {
+    letter-spacing: 0 !important;
+}
+
+.manager-main .manager-content .text-gray-900,
+.manager-main .manager-content .text-gray-800,
+.manager-main .manager-content .text-gray-700,
+.kasir-main .kasir-content .text-gray-900,
+.kasir-main .kasir-content .text-gray-800,
+.kasir-main .kasir-content .text-gray-700,
+body > main > .flex-1.overflow-y-auto .text-gray-900,
+body > main > .flex-1.overflow-y-auto .text-gray-800,
+body > main > .flex-1.overflow-y-auto .text-gray-700 {
+    color: var(--elco-ui-text) !important;
+}
+
+.manager-main .manager-content .text-gray-600,
+.manager-main .manager-content .text-gray-500,
+.manager-main .manager-content .text-gray-400,
+.kasir-main .kasir-content .text-gray-600,
+.kasir-main .kasir-content .text-gray-500,
+.kasir-main .kasir-content .text-gray-400,
+body > main > .flex-1.overflow-y-auto .text-gray-600,
+body > main > .flex-1.overflow-y-auto .text-gray-500,
+body > main > .flex-1.overflow-y-auto .text-gray-400 {
+    color: var(--elco-ui-soft) !important;
+}
+
+.manager-main .manager-content .bg-white,
+.manager-main .manager-content .shadow-soft,
+.manager-main .manager-content .shadow-hover,
+.manager-main .manager-content .glass-card,
+.kasir-main .kasir-content .bg-white,
+.kasir-main .kasir-content .shadow-soft,
+.kasir-main .kasir-content .shadow-hover,
+body > main > .flex-1.overflow-y-auto .bg-white,
+body > main > .flex-1.overflow-y-auto .shadow-soft,
+body > main > .flex-1.overflow-y-auto .shadow-hover {
+    background:
+        linear-gradient(135deg, rgba(255, 246, 235, 0.15), rgba(255, 246, 235, 0.065)) !important;
+    border: 1px solid var(--elco-ui-border) !important;
+    box-shadow:
+        0 18px 42px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.13) !important;
+    backdrop-filter: blur(22px) saturate(145%) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(145%) !important;
+}
+
+.manager-main .manager-content .rounded-3xl,
+.kasir-main .kasir-content .rounded-3xl,
+body > main > .flex-1.overflow-y-auto .rounded-3xl {
+    border-radius: 22px !important;
+}
+
+.manager-main .manager-content .rounded-2xl,
+.kasir-main .kasir-content .rounded-2xl,
+body > main > .flex-1.overflow-y-auto .rounded-2xl {
+    border-radius: 16px !important;
+}
+
+.manager-main .manager-content .p-4,
+.kasir-main .kasir-content .p-4,
+body > main > .flex-1.overflow-y-auto .p-4 {
+    padding: 1.15rem !important;
+}
+
+.manager-main .manager-content .p-5,
+.kasir-main .kasir-content .p-5,
+body > main > .flex-1.overflow-y-auto .p-5 {
+    padding: 1.35rem !important;
+}
+
+.manager-main .manager-content .p-6,
+.kasir-main .kasir-content .p-6,
+body > main > .flex-1.overflow-y-auto .p-6 {
+    padding: 1.6rem !important;
+}
+
+.manager-main .manager-content .p-8,
+.kasir-main .kasir-content .p-8,
+body > main > .flex-1.overflow-y-auto .p-8 {
+    padding: clamp(1.65rem, 2.4vw, 2.25rem) !important;
+}
+
+.manager-main .manager-content .shadow-soft:hover,
+.manager-main .manager-content .shadow-hover:hover,
+.manager-main .manager-content .glass-card:hover,
+.kasir-main .kasir-content .shadow-soft:hover,
+.kasir-main .kasir-content .shadow-hover:hover,
+body > main > .flex-1.overflow-y-auto .shadow-soft:hover,
+body > main > .flex-1.overflow-y-auto .shadow-hover:hover {
+    border-color: rgba(240, 181, 109, 0.34) !important;
+    box-shadow:
+        0 24px 54px rgba(0, 0, 0, 0.30),
+        inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+}
+
+.manager-main .manager-content table,
+.kasir-main .kasir-content table,
+body > main > .flex-1.overflow-y-auto table {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    color: var(--elco-ui-soft) !important;
+}
+
+.manager-main .manager-content table th,
+.kasir-main .kasir-content table th,
+body > main > .flex-1.overflow-y-auto table th {
+    color: rgba(255, 246, 235, 0.62) !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+}
+
+.manager-main .manager-content table td,
+.kasir-main .kasir-content table td,
+body > main > .flex-1.overflow-y-auto table td {
+    color: var(--elco-ui-soft) !important;
+    border-color: rgba(255, 238, 220, 0.11) !important;
+}
+
+.manager-main .manager-content table tbody tr:hover,
+.kasir-main .kasir-content table tbody tr:hover,
+body > main > .flex-1.overflow-y-auto table tbody tr:hover {
+    background: rgba(255, 246, 235, 0.085) !important;
+}
+
+.manager-main .manager-content input,
+.manager-main .manager-content select,
+.manager-main .manager-content textarea,
+.kasir-main .kasir-content input,
+.kasir-main .kasir-content select,
+.kasir-main .kasir-content textarea,
+body > main > .flex-1.overflow-y-auto input,
+body > main > .flex-1.overflow-y-auto select,
+body > main > .flex-1.overflow-y-auto textarea {
+    min-height: 44px !important;
+    background: rgba(255, 246, 235, 0.105) !important;
+    border: 1px solid rgba(255, 238, 220, 0.20) !important;
+    color: var(--elco-ui-text) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.manager-main .manager-content input::placeholder,
+.manager-main .manager-content textarea::placeholder,
+.kasir-main .kasir-content input::placeholder,
+.kasir-main .kasir-content textarea::placeholder,
+body > main > .flex-1.overflow-y-auto input::placeholder,
+body > main > .flex-1.overflow-y-auto textarea::placeholder {
+    color: rgba(255, 246, 235, 0.42) !important;
+}
+
+.manager-main .manager-content input:focus,
+.manager-main .manager-content select:focus,
+.manager-main .manager-content textarea:focus,
+.kasir-main .kasir-content input:focus,
+.kasir-main .kasir-content select:focus,
+.kasir-main .kasir-content textarea:focus,
+body > main > .flex-1.overflow-y-auto input:focus,
+body > main > .flex-1.overflow-y-auto select:focus,
+body > main > .flex-1.overflow-y-auto textarea:focus {
+    border-color: rgba(240, 181, 109, 0.60) !important;
+    box-shadow:
+        0 0 0 4px rgba(240, 181, 109, 0.13),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
+}
+
+.manager-main .manager-content select option,
+.kasir-main .kasir-content select option,
+body > main > .flex-1.overflow-y-auto select option {
+    background: #2b1a13 !important;
+    color: #fff6eb !important;
+}
+
+.manager-main .manager-content a.rounded-xl,
+.manager-main .manager-content a.rounded-2xl,
+.manager-main .manager-content button.rounded-xl,
+.manager-main .manager-content button.rounded-2xl,
+.kasir-main .kasir-content a.rounded-xl,
+.kasir-main .kasir-content a.rounded-2xl,
+.kasir-main .kasir-content button.rounded-xl,
+.kasir-main .kasir-content button.rounded-2xl,
+body > main > .flex-1.overflow-y-auto a.rounded-xl,
+body > main > .flex-1.overflow-y-auto a.rounded-2xl,
+body > main > .flex-1.overflow-y-auto button.rounded-xl,
+body > main > .flex-1.overflow-y-auto button.rounded-2xl {
+    min-height: 40px !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    font-weight: 650 !important;
+}
+
+.manager-main .manager-content .bg-elco-coffee,
+.manager-main .manager-content .bg-elco-mocha,
+.manager-main .manager-content .bg-gradient-to-r,
+.kasir-main .kasir-content .bg-elco-coffee,
+.kasir-main .kasir-content .bg-elco-mocha,
+.kasir-main .kasir-content .bg-gradient-to-r,
+body > main > .flex-1.overflow-y-auto .bg-elco-coffee,
+body > main > .flex-1.overflow-y-auto .bg-elco-mocha,
+body > main > .flex-1.overflow-y-auto .bg-gradient-to-r {
+    background: linear-gradient(135deg, #8b542e, #c37a3d, #f0b56d) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 238, 220, 0.20) !important;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22) !important;
+}
+
+.manager-main .manager-content .bg-gray-50,
+.manager-main .manager-content .bg-orange-50,
+.manager-main .manager-content .bg-amber-50,
+.manager-main .manager-content .bg-blue-50,
+.manager-main .manager-content .bg-purple-50,
+.kasir-main .kasir-content .bg-gray-50,
+.kasir-main .kasir-content .bg-orange-50,
+.kasir-main .kasir-content .bg-amber-50,
+.kasir-main .kasir-content .bg-blue-50,
+.kasir-main .kasir-content .bg-purple-50,
+body > main > .flex-1.overflow-y-auto .bg-gray-50,
+body > main > .flex-1.overflow-y-auto .bg-orange-50,
+body > main > .flex-1.overflow-y-auto .bg-amber-50,
+body > main > .flex-1.overflow-y-auto .bg-blue-50,
+body > main > .flex-1.overflow-y-auto .bg-purple-50 {
+    background: rgba(255, 246, 235, 0.10) !important;
+    border-color: rgba(255, 238, 220, 0.14) !important;
+}
+
+.manager-main .manager-content .text-elco-coffee,
+.kasir-main .kasir-content .text-elco-coffee,
+body > main > .flex-1.overflow-y-auto .text-elco-coffee {
+    color: #ffd6a1 !important;
+}
+
+.manager-main .manager-content .text-red-500,
+.manager-main .manager-content .text-red-600,
+.kasir-main .kasir-content .text-red-500,
+.kasir-main .kasir-content .text-red-600,
+body > main > .flex-1.overflow-y-auto .text-red-500,
+body > main > .flex-1.overflow-y-auto .text-red-600 {
+    color: var(--elco-ui-danger) !important;
+}
+
+.manager-main .manager-content .text-emerald-600,
+.manager-main .manager-content .text-emerald-700,
+.kasir-main .kasir-content .text-emerald-600,
+.kasir-main .kasir-content .text-emerald-700,
+body > main > .flex-1.overflow-y-auto .text-emerald-600,
+body > main > .flex-1.overflow-y-auto .text-emerald-700 {
+    color: #8ff0bf !important;
+}
+
+.manager-main .manager-content .bg-emerald-100,
+.kasir-main .kasir-content .bg-emerald-100,
+body > main > .flex-1.overflow-y-auto .bg-emerald-100 {
+    background: rgba(45, 212, 191, 0.18) !important;
+    color: #ccfbf1 !important;
+    border: 1px solid rgba(45, 212, 191, 0.28) !important;
+}
+
+.manager-main .manager-content .bg-yellow-100,
+.manager-main .manager-content .bg-orange-100,
+.kasir-main .kasir-content .bg-yellow-100,
+.kasir-main .kasir-content .bg-orange-100,
+body > main > .flex-1.overflow-y-auto .bg-yellow-100,
+body > main > .flex-1.overflow-y-auto .bg-orange-100 {
+    background: rgba(240, 181, 109, 0.20) !important;
+    color: #ffe4b8 !important;
+    border: 1px solid rgba(240, 181, 109, 0.30) !important;
+}
+
+.manager-main .manager-content .bg-red-100,
+.manager-main .manager-content .bg-red-50,
+.kasir-main .kasir-content .bg-red-100,
+.kasir-main .kasir-content .bg-red-50,
+body > main > .flex-1.overflow-y-auto .bg-red-100,
+body > main > .flex-1.overflow-y-auto .bg-red-50 {
+    background: rgba(255, 123, 110, 0.16) !important;
+    color: #ffd3ce !important;
+    border: 1px solid rgba(255, 123, 110, 0.28) !important;
+}
+
+@media (max-width: 768px) {
+    .manager-main .manager-content,
+    .kasir-main .kasir-content,
+    body > main > .flex-1.overflow-y-auto {
+        padding-inline: 1.15rem !important;
+        padding-top: 1.6rem !important;
+        padding-bottom: 7.75rem !important;
+    }
+
+    .manager-main .manager-content .grid,
+    .kasir-main .kasir-content .grid,
+    body > main > .flex-1.overflow-y-auto .grid {
+        gap: 1rem !important;
     }
 }

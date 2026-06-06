@@ -1,58 +1,45 @@
-<header class="z-10 flex h-24 items-center justify-between px-4 md:px-8">
-    <div class="min-w-0">
-        <h1 class="truncate font-display text-2xl font-bold text-elco-coffee">Kasir ELCO</h1>
-        <p class="mt-1 text-sm text-gray-500">
-            {{ now()->translatedFormat('l, j F Y') }} •
-            <span id="realtimeClock" class="font-medium text-elco-coffee"></span>
-        </p>
-    </div>
+<header class="elco-topbar-shell" aria-label="Topbar kasir">
+    <div class="elco-topbar elco-topbar-simple">
+        <div class="elco-topbar-left">
+            <h1 class="elco-topbar-title">@yield('page_title', 'Kasir ELCO')</h1>
+            <p class="elco-topbar-date">{{ now()->translatedFormat('l, j F Y') }}</p>
+        </div>
 
-    <div class="relative" id="profileWrapper">
-        <button
-            type="button"
-            onclick="toggleProfile()"
-            class="flex items-center gap-3 rounded-2xl px-2 py-2 text-left hover:bg-white/70 smooth-transition"
-        >
-            <span class="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-elco-coffee to-elco-mocha font-bold text-white shadow-sm">
-                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-            </span>
+        <div class="elco-topbar-right">
+            <div class="relative" id="profileWrapper">
+                <button class="elco-topbar-profile-pill" onclick="toggleProfile()" aria-label="Profil">
+                    <div class="elco-topbar-avatar">
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    </div>
+                    <div class="elco-topbar-profile-info">
+                        <span class="elco-topbar-profile-name">{{ auth()->user()->name }}</span>
+                        <span class="elco-topbar-profile-role">Kasir</span>
+                    </div>
+                    <i class="ph ph-caret-down elco-topbar-caret"></i>
+                </button>
 
-            <span class="hidden text-right md:block">
-                <span class="block text-sm font-semibold text-gray-800">{{ auth()->user()->name }}</span>
-                <span class="block text-xs text-gray-500">Kasir</span>
-            </span>
-
-            <i class="ph ph-caret-down text-sm text-gray-400"></i>
-        </button>
-
-        <div
-            id="profileDropdown"
-            class="absolute right-0 top-14 z-50 hidden w-52 overflow-hidden rounded-2xl border border-gray-100 bg-white py-1 shadow-hover"
-        >
-            <div class="border-b border-gray-100 px-4 py-3">
-                <p class="truncate text-sm font-semibold text-gray-800">{{ auth()->user()->name }}</p>
-                <p class="truncate text-xs text-gray-500">{{ auth()->user()->email }}</p>
-            </div>
-
-            <a
-                href="{{ route('profile.edit') }}"
-                class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 smooth-transition"
-            >
-                <i class="ph ph-user-circle text-gray-400"></i>
-                Edit Profil
-            </a>
-
-            <div class="mt-1 border-t border-gray-100">
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button
-                        type="submit"
-                        class="flex w-full items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 smooth-transition"
-                    >
-                        <i class="ph ph-sign-out"></i>
-                        Keluar
-                    </button>
-                </form>
+                <div id="profileDropdown" class="elco-topbar-dropdown hidden" style="min-width:240px;">
+                    <div class="elco-topbar-dropdown-header">
+                        <p>{{ auth()->user()->name }}</p>
+                        <span>{{ auth()->user()->email }}</span>
+                    </div>
+                    <a href="{{ route('profile.edit') }}" class="elco-topbar-notif-item">
+                        <div class="elco-topbar-notif-icon" style="background:rgba(255,246,235,0.08);color:rgba(255,246,235,0.68);">
+                            <i class="ph ph-user-circle"></i>
+                        </div>
+                        <div><p>Edit Profil</p></div>
+                    </a>
+                    <div style="border-top:1px solid rgba(255,238,220,0.10);margin:4px 0;"></div>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="elco-topbar-notif-item elco-topbar-logout">
+                            <div class="elco-topbar-notif-icon" style="background:rgba(239,99,88,0.12);color:#f87171;">
+                                <i class="ph ph-sign-out"></i>
+                            </div>
+                            <div><p>Keluar</p></div>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -61,15 +48,12 @@
 @push('scripts')
 <script>
 function toggleProfile() {
-    document.getElementById('profileDropdown')?.classList.toggle('hidden');
+    document.getElementById('profileDropdown').classList.toggle('hidden');
 }
-
-document.addEventListener('click', function (event) {
-    const wrapper = document.getElementById('profileWrapper');
-    const dropdown = document.getElementById('profileDropdown');
-
-    if (wrapper && dropdown && !wrapper.contains(event.target)) {
-        dropdown.classList.add('hidden');
+document.addEventListener('click', function(e) {
+    const profileW = document.getElementById('profileWrapper');
+    if (profileW && !profileW.contains(e.target)) {
+        document.getElementById('profileDropdown')?.classList.add('hidden');
     }
 });
 </script>

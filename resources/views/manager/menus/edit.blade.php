@@ -25,14 +25,9 @@
             {{-- Preview Gambar --}}
             <div class="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-2xl p-6 cursor-pointer hover:border-elco-mocha smooth-transition"
                  onclick="document.getElementById('imageInput').click()">
-                @if($menu->image)
-                    <img id="previewImg" src="{{ asset('storage/' . ltrim($menu->image, '/')) }}"
-                         class="h-32 rounded-xl object-cover mb-2">
-                @else
-                    <img id="previewImg" src="" class="h-32 rounded-xl object-cover mb-2 hidden">
-                    <i class="ph ph-image text-4xl text-gray-300 block text-center mb-2" id="uploadIcon"></i>
-                @endif
-                <p class="text-xs text-gray-400">Klik untuk ganti foto (maks 5MB)</p>
+                <img id="previewImg" src="{{ $menu->image_url }}"
+                     class="mb-3 h-40 w-full max-w-sm rounded-2xl object-cover">
+                <p class="text-xs text-gray-400">Klik untuk ganti foto</p>
                 <input type="file" id="imageInput" name="image" accept="image/*" class="hidden"
                        onchange="previewImage(this)">
             </div>

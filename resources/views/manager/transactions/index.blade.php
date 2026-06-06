@@ -86,8 +86,8 @@
                 data-payment="{{ $trx->payment_method }}"
                 data-items="{{ $trx->items->map(function($i){ return ['nama' => $i->menu_name, 'qty' => $i->quantity, 'harga' => $i->price, 'subtotal' => $i->subtotal]; })->toJson() }}">
                 <td class="py-4 px-6 text-sm font-semibold text-gray-800">{{ $trx->invoice_number }}</td>
-                <td class="py-4 px-6 text-sm text-gray-600">{{ $trx->branch->name }}</td>
-                <td class="py-4 px-6 text-sm text-gray-600">{{ $trx->kasir->name }}</td>
+                <td class="py-4 px-6 text-sm text-gray-600">{{ $trx->branch?->name ?? '—' }}</td>
+                <td class="py-4 px-6 text-sm text-gray-600">{{ $trx->kasir?->name ?? '—' }}</td>
                 <td class="py-4 px-6 text-sm text-gray-600">{{ $trx->items->count() }} item</td>
                 <td class="py-4 px-6">
                     <button onclick="openDetailModal({{ $trx->id }})"

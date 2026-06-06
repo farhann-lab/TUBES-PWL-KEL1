@@ -48,6 +48,10 @@
                     <td class="py-4 px-5">
                         <p class="text-sm font-semibold text-gray-800">{{ $req->item_name }}</p>
                         <p class="text-xs text-gray-400">{{ $req->created_at->format('d M Y') }}</p>
+                        <a href="{{ route('manager.stock-requests.show', $req) }}"
+                           class="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-elco-coffee hover:underline">
+                            <i class="ph ph-eye"></i> Detail
+                        </a>
                         @if($req->reason)
                         <p class="text-xs text-gray-500 mt-1 italic">"{{ $req->reason }}"</p>
                         @endif
@@ -106,9 +110,9 @@
                     {{-- Kolom Bukti Foto --}}
                     <td class="py-4 px-5">
                         @if($req->delivery_photo)
-                            <a href="{{ asset('storage/' . ltrim($req->delivery_photo, '/')) }}" target="_blank"
+                            <a href="{{ Storage::url($req->delivery_photo) }}" target="_blank"
                                class="block group">
-                                <img src="{{ asset('storage/' . ltrim($req->delivery_photo, '/')) }}"
+                                <img src="{{ Storage::url($req->delivery_photo) }}"
                                      class="w-16 h-16 rounded-xl object-cover border border-gray-200 group-hover:opacity-80 smooth-transition"
                                      alt="Bukti">
                                 <p class="text-xs text-elco-coffee mt-1 group-hover:underline">Lihat</p>
@@ -125,8 +129,14 @@
                             <form id="app-{{ $req->id }}"
                                   action="{{ route('manager.stock-requests.approve', $req) }}" method="POST">
                                 @csrf
-                                <button type="submit" form="app-{{ $req->id }}"
-                                    onclick="return confirm('Setujui pengajuan {{ addslashes($req->item_name) }} untuk {{ addslashes($req->branch?->name ?? "-") }}?')"
+                                <button type="button"
+                                    onclick="elcoConfirm({
+                                        title: 'Setujui Pengajuan?',
+                                        text: '{{ addslashes($req->item_name) }} ({{ $req->quantity }} {{ $req->unit }}) untuk {{ addslashes($req->branch?->name ?? "-") }}',
+                                        confirmColor: '#10b981',
+                                        icon: 'question',
+                                        onConfirm: () => document.getElementById('app-{{ $req->id }}').submit()
+                                    })"
                                     class="w-full text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl hover:bg-emerald-100 smooth-transition">
                                     <i class="ph ph-check"></i> Setujui
                                 </button>
@@ -140,8 +150,15 @@
                         <form id="confirm-{{ $req->id }}"
                               action="{{ route('manager.stock-requests.confirm-delivery', $req) }}" method="POST">
                             @csrf
-                            <button type="submit" form="confirm-{{ $req->id }}"
-                                onclick="return confirm('Stok akan bertambah otomatis setelah dikonfirmasi.')"
+                            <button type="button"
+                                onclick="elcoConfirm({
+                                    title: 'Konfirmasi Penerimaan?',
+                                    text: 'Stok akan bertambah otomatis setelah dikonfirmasi.',
+                                    confirmText: 'Konfirmasi',
+                                    confirmColor: '#10b981',
+                                    icon: 'question',
+                                    onConfirm: () => document.getElementById('confirm-{{ $req->id }}').submit()
+                                })"
                                 class="text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl hover:bg-emerald-100 smooth-transition whitespace-nowrap">
                                 <i class="ph ph-check-circle"></i> Konfirmasi & Tambah Stok
                             </button>

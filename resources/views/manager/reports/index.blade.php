@@ -8,6 +8,10 @@
         <h2 class="text-xl font-display font-bold text-gray-800">Laporan Keuangan</h2>
         <p class="text-sm text-gray-500 mt-1">Ringkasan operasional semua cabang</p>
     </div>
+    <a href="{{ route('manager.reports.export', ['month' => $month, 'year' => $year, 'branch_id' => $branchId]) }}"
+       class="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-elco-coffee to-elco-mocha px-5 py-3 text-sm font-semibold text-white shadow-md smooth-transition hover:shadow-hover active:scale-95">
+        <i class="ph ph-download-simple"></i> Export CSV
+    </a>
 </div>
 
 <div class="bg-white rounded-2xl shadow-soft p-4 mb-6">
@@ -48,10 +52,6 @@
             class="px-5 py-2 bg-elco-coffee text-white text-sm font-semibold rounded-xl hover:bg-elco-mocha smooth-transition">
             <i class="ph ph-funnel mr-1"></i> Filter
         </button>
-        <a href="{{ route('manager.reports.export', ['month' => $month, 'year' => $year, 'branch_id' => $branchId ?? '']) }}"
-        class="flex items-center gap-2 px-5 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 smooth-transition">
-            <i class="ph ph-download-simple"></i> Download CSV
-        </a>
     </form>
 </div>
 
@@ -337,10 +337,8 @@ const profit   = income.map((v, i) => v - expense[i]);
 
 // Warna ELCO
 const coffeeColor  = '#5C3D2E';
-const mochaColor   = '#8B5E3C';
 const emeraldColor = '#10b981';
 const redColor     = '#ef4444';
-const blueColor    = '#3b82f6';
 
 // ── Chart 1: Pemasukan vs Pengeluaran ────────────────────
 new Chart(document.getElementById('incomeExpenseChart'), {
@@ -397,10 +395,10 @@ new Chart(document.getElementById('profitChart'), {
         datasets: [{
             label: 'Laba Bersih',
             data: profit,
-            borderColor: coffeeColor,
+            borderColor: emeraldColor,
             backgroundColor: coffeeColor + '15',
             borderWidth: 2.5,
-            pointBackgroundColor: coffeeColor,
+            pointBackgroundColor: emeraldColor,
             pointRadius: 4,
             tension: 0.4,
             fill: true,
@@ -468,32 +466,5 @@ function openTransactionDetail(id) {
     document.getElementById('transactionDetailModal').classList.remove('hidden');
 }
 </script>
-<script>
-// Toggle field nama item berdasarkan tipe
-document.querySelectorAll('input[name="type"]').forEach(radio => {
-    radio.addEventListener('change', function() {
-        const isStock = this.value === 'stock';
-        document.getElementById('stockSelect').classList.toggle('hidden', !isStock);
-        document.getElementById('operationalInput').classList.toggle('hidden', isStock);
 
-        // Sync nilai ke field yang aktif
-        document.getElementById('itemNameSelect').required = isStock;
-        document.getElementById('itemNameOps').required    = !isStock;
-    });
-});
-
-// Sebelum submit, satukan nilai item_name
-document.querySelector('form').addEventListener('submit', function(e) {
-    const type = document.querySelector('input[name="type"]:checked')?.value;
-    if (type === 'operational') {
-        // Buat hidden input dengan nama item_name
-        const val = document.getElementById('itemNameOps').value;
-        const hidden = document.createElement('input');
-        hidden.type  = 'hidden';
-        hidden.name  = 'item_name';
-        hidden.value = val;
-        this.appendChild(hidden);
-    }
-});
-</script>
 @endpush

@@ -163,7 +163,7 @@ class UserSeeder extends Seeder
                     'category' => $menuData['category'],
                     'stock_type' => $menuData['stock_type'],
                     'base_price' => $menuData['price'],
-                    'image' => null,
+                    'image' => Menu::fallbackImageFor($menuData['name'], $menuData['category']),
                     'is_available' => true,
                 ]);
             } else {
@@ -173,6 +173,7 @@ class UserSeeder extends Seeder
                     'category' => $menuData['category'],
                     'stock_type' => $menuData['stock_type'],
                     'base_price' => $menuData['price'],
+                    'image' => Menu::fallbackImageFor($menuData['name'], $menuData['category']),
                     'is_available' => true,
                 ]);
             }

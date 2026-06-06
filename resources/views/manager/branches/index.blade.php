@@ -75,13 +75,17 @@
                             <span class="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
                                 Dihapus
                             </span>
-                        @elseif($branch->status === 'active')
-                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
-                                ● Aktif
+                       @elseif($branch->status === 'active')
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-white border border-emerald-200/70 shadow-[0_0_14px_rgba(34,197,94,0.35)]"
+                                style="background: linear-gradient(135deg, #16a34a, #22c55e);">
+                                <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                                Aktif
                             </span>
                         @else
-                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
-                                ● Nonaktif
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-white border border-yellow-200/70 shadow-[0_0_14px_rgba(234,179,8,0.35)]"
+                                style="background: linear-gradient(135deg, #ca8a04, #eab308);">
+                                <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                                Nonaktif
                             </span>
                         @endif
                     </td>
@@ -93,47 +97,63 @@
 
                     {{-- Aksi --}}
                     <td class="py-4 px-6">
-                            <div class="flex items-center gap-2">
+                            <div class="flex flex-wrap items-center gap-2">
+                                @if($branch->trashed())
+                                <form id="restore-branch-{{ $branch->id }}" action="{{ route('manager.branches.restore', $branch->id) }}" method="POST">
+                                    @csrf
+                                    <button type="button"
+                                        onclick="elcoConfirm({
+                                            title: 'Pulihkan Cabang?',
+                                            text: 'Cabang {{ addslashes($branch->name) }} akan aktif kembali di daftar cabang.',
+                                            confirmText: 'Pulihkan',
+                                            confirmColor: '#10b981',
+                                            icon: 'question',
+                                            onConfirm: () => document.getElementById('restore-branch-{{ $branch->id }}').submit()
+                                        })"
+                                        class="text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl hover:bg-emerald-100 smooth-transition">
+                                        <i class="ph ph-arrow-clockwise"></i> Pulihkan
+                                    </button>
+                                </form>
+                                @else
                                 <a href="{{ route('manager.branches.edit', $branch) }}"
                                 class="text-xs font-medium text-elco-coffee bg-elco-cream px-3 py-2 rounded-xl hover:bg-elco-latte/30 smooth-transition">
                                     <i class="ph ph-pencil"></i> Edit
                                 </a>
-
-                                {{-- Nonaktifkan sementara --}}
                                 @if($branch->status === 'active')
-                                <form action="{{ route('manager.branches.deactivate', $branch) }}" method="POST" class="inline">
+                                <form id="deactivate-branch-{{ $branch->id }}" action="{{ route('manager.branches.deactivate', $branch) }}" method="POST">
                                     @csrf
-                                    <button type="submit"
-                                        onclick="return confirm('Nonaktifkan cabang {{ addslashes($branch->name) }} sementara?')"
+                                    <button type="button"
+                                        onclick="elcoConfirm({
+                                            title: 'Nonaktifkan Cabang?',
+                                            text: 'Cabang {{ addslashes($branch->name) }} tidak akan masuk performa cabang aktif.',
+                                            confirmText: 'Nonaktifkan',
+                                            confirmColor: '#f59e0b',
+                                            icon: 'warning',
+                                            onConfirm: () => document.getElementById('deactivate-branch-{{ $branch->id }}').submit()
+                                        })"
                                         class="text-xs font-medium text-yellow-600 bg-yellow-50 px-3 py-2 rounded-xl hover:bg-yellow-100 smooth-transition">
-                                        <i class="ph ph-pause-circle"></i> Nonaktifkan
-                                    </button>
-                                </form>
-                                @else
-                                <form action="{{ route('manager.branches.update', $branch) }}" method="POST" class="inline">
-                                    @csrf
-                                    @method('PUT')
-                                    <input type="hidden" name="name" value="{{ $branch->name }}">
-                                    <input type="hidden" name="address" value="{{ $branch->address }}">
-                                    <input type="hidden" name="phone" value="{{ $branch->phone }}">
-                                    <input type="hidden" name="status" value="active">
-                                    <button type="submit"
-                                        class="text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl hover:bg-emerald-100 smooth-transition">
-                                        <i class="ph ph-play-circle"></i> Aktifkan
+                                        <i class="ph ph-pause-circle"></i> Nonaktif
                                     </button>
                                 </form>
                                 @endif
-
-                                {{-- Hapus permanen --}}
-                                <form action="{{ route('manager.branches.destroy', $branch->id) }}" method="POST" class="inline">
+                                <form action="{{ route('manager.branches.destroy', $branch->id) }}"
+                                    method="POST" class="inline" id="destroy-branch-{{ $branch->id }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit"
-                                        onclick="return confirm('HAPUS PERMANEN cabang {{ addslashes($branch->name) }}?\n\nSemua akun admin dan kasir cabang ini akan dihapus permanen.\nTindakan ini TIDAK DAPAT dibatalkan!')"
+                                    <button type="button"
+                                        onclick="elcoConfirm({
+                                            title: 'Hapus Permanen?',
+                                            text: 'Cabang {{ addslashes($branch->name) }} dan akun terkait akan dihapus permanen.',
+                                            confirmText: 'Hapus Permanen',
+                                            confirmColor: '#ef4444',
+                                            icon: 'warning',
+                                            onConfirm: () => document.getElementById('destroy-branch-{{ $branch->id }}').submit()
+                                        })"
                                         class="text-xs font-medium text-red-500 bg-red-50 px-3 py-2 rounded-xl hover:bg-red-100 smooth-transition">
-                                        <i class="ph ph-trash"></i> Hapus Permanen
+                                        <i class="ph ph-trash"></i> Hapus
                                     </button>
                                 </form>
+                                @endif
                             </div>
                     </td>
                 </tr>
@@ -183,7 +203,7 @@
     </div>
 </div>
 @endsection
-
+<!-- 
 @push('scripts')
 <script>
 function openDeleteBranchModal(id, name) {
@@ -195,4 +215,4 @@ function closeDeleteBranchModal() {
     document.getElementById('deleteBranchModal').classList.add('hidden');
 }
 </script>
-@endpush
+@endpush -->
