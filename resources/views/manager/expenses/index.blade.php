@@ -82,6 +82,7 @@
                 <th class="py-4 px-6 font-medium">Kategori</th>
                 <th class="py-4 px-6 font-medium">Jumlah</th>
                 <th class="py-4 px-6 font-medium">Tanggal</th>
+                <th class="py-4 px-6 font-medium">Bukti</th>
                 <th class="py-4 px-6 font-medium">Status</th>
                 <th class="py-4 px-6 font-medium">Aksi</th>
             </tr>
@@ -106,6 +107,21 @@
                 </td>
                 <td class="py-4 px-6 text-sm text-gray-500">
                     {{ $expense->expense_date->format('d M Y') }}
+                </td>
+                <td class="py-4 px-6">
+                    @if($expense->receipt)
+                        <a href="{{ Storage::url($expense->receipt) }}" target="_blank" rel="noopener"
+                           class="group inline-flex items-center gap-3 rounded-2xl bg-white/10 p-2 smooth-transition hover:bg-white/20">
+                            <img src="{{ Storage::url($expense->receipt) }}"
+                                 alt="Bukti pengeluaran"
+                                 class="h-12 w-12 rounded-xl border border-gray-200 object-cover smooth-transition group-hover:opacity-85">
+                            <span class="text-xs font-semibold text-elco-coffee group-hover:underline">
+                                Lihat
+                            </span>
+                        </a>
+                    @else
+                        <span class="text-xs text-gray-300">Tidak ada</span>
+                    @endif
                 </td>
                 <td class="py-4 px-6">
                     <span class="px-3 py-1 rounded-full text-xs font-medium
@@ -163,7 +179,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="7" class="py-12 text-center text-gray-400">
+                <td colspan="8" class="py-12 text-center text-gray-400">
                     <i class="ph ph-receipt text-4xl block mb-2"></i>
                     Tidak ada pengeluaran pada periode ini
                 </td>
