@@ -2,7 +2,7 @@
     <div class="elco-topbar">
         <div class="elco-topbar-left">
             <h1 class="elco-topbar-title">@yield('page_title', 'Dashboard')</h1>
-            <p class="elco-topbar-date">{{ now()->translatedFormat('l, j F Y') }}</p>
+            <p class="elco-topbar-date" data-elco-clock>{{ now()->translatedFormat('l, j F Y H:i') }} WIB</p>
         </div>
 
         <div class="elco-topbar-right">
@@ -146,5 +146,24 @@ document.addEventListener('click', function(e) {
         document.getElementById('profileDropdown')?.classList.add('hidden');
     }
 });
+
+function updateElcoClock() {
+    document.querySelectorAll('[data-elco-clock]').forEach(function (clock) {
+        clock.textContent = new Intl.DateTimeFormat('id-ID', {
+            timeZone: 'Asia/Jakarta',
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false,
+        }).format(new Date()).replace(' pukul ', ', ') + ' WIB';
+    });
+}
+
+updateElcoClock();
+setInterval(updateElcoClock, 1000);
 </script>
 @endpush

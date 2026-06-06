@@ -26,22 +26,39 @@
 </div>
 
 {{-- Summary Cards --}}
-<div class="grid grid-cols-3 gap-4 mb-6">
-    <div class="bg-white p-5 rounded-2xl shadow-soft">
-        <p class="text-xs text-gray-500 mb-1">Total Bulan Ini</p>
-        <p class="text-xl font-bold text-gray-800">
-            Rp {{ number_format($summary['total'], 0, ',', '.') }}
-        </p>
+<div class="grid grid-cols-1 gap-5 mb-8 md:grid-cols-3">
+    <div class="bg-white rounded-3xl shadow-soft p-6 min-h-[132px] flex items-center justify-between gap-5 smooth-transition hover:-translate-y-1 hover:shadow-hover">
+        <div class="min-w-0">
+            <p class="text-xs font-semibold uppercase text-gray-500 mb-2">Total Bulan Ini</p>
+            <p class="text-2xl font-bold text-gray-800 leading-tight break-words">
+                Rp {{ number_format($summary['total'], 0, ',', '.') }}
+            </p>
+        </div>
+        <div class="h-12 w-12 shrink-0 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center">
+            <i class="ph ph-wallet text-2xl"></i>
+        </div>
     </div>
-    <div class="bg-white p-5 rounded-2xl shadow-soft">
-        <p class="text-xs text-gray-500 mb-1">Menunggu Verifikasi</p>
-        <p class="text-2xl font-bold text-yellow-600">{{ $summary['pending'] }}</p>
+    <div class="bg-white rounded-3xl shadow-soft p-6 min-h-[132px] flex items-center justify-between gap-5 smooth-transition hover:-translate-y-1 hover:shadow-hover">
+        <div class="min-w-0">
+            <p class="text-xs font-semibold uppercase text-gray-500 mb-2">Menunggu Verifikasi</p>
+            <p class="text-2xl font-bold text-yellow-600 leading-tight">
+                {{ number_format($summary['pending'], 0, ',', '.') }} data
+            </p>
+        </div>
+        <div class="h-12 w-12 shrink-0 rounded-2xl bg-yellow-100 text-yellow-600 flex items-center justify-center">
+            <i class="ph ph-hourglass-medium text-2xl"></i>
+        </div>
     </div>
-    <div class="bg-white p-5 rounded-2xl shadow-soft">
-        <p class="text-xs text-gray-500 mb-1">Pengeluaran Terverifikasi</p>
-        <p class="text-2xl font-bold text-emerald-600">
-            {{ number_format($summary['verified'], 0, ',', '.') }} data
-        </p>
+    <div class="bg-white rounded-3xl shadow-soft p-6 min-h-[132px] flex items-center justify-between gap-5 smooth-transition hover:-translate-y-1 hover:shadow-hover">
+        <div class="min-w-0">
+            <p class="text-xs font-semibold uppercase text-gray-500 mb-2">Pengeluaran Terverifikasi</p>
+            <p class="text-2xl font-bold text-emerald-600 leading-tight">
+                {{ number_format($summary['verified'], 0, ',', '.') }} data
+            </p>
+        </div>
+        <div class="h-12 w-12 shrink-0 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+            <i class="ph ph-check-circle text-2xl"></i>
+        </div>
     </div>
 </div>
 
