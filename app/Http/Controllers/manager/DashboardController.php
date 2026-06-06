@@ -14,6 +14,24 @@ class DashboardController extends Controller
     public function index()
     {
         $now = now();
+        $monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        $chartLabels = [];
+        $incomeChart = [];
+        $expenseChart = [];
+
+        for ($month = 1; $month <= 12; $month++) {
+            $chartLabels[] = $monthLabels[$month - 1];
+
+            $incomeChart[] = (float) Transaction::where('status', 'completed')
+                ->whereYear('created_at', $now->year)
+                ->whereMonth('created_at', $month)
+                ->sum('total');
+
+            $expenseChart[] = (float) Expense::where('status', 'verified')
+                ->whereYear('expense_date', $now->year)
+                ->whereMonth('expense_date', $month)
+                ->sum('amount');
+        }
 
         $data = [
             'total_branches'   => Branch::where('status', 'active')->count(),
@@ -26,6 +44,10 @@ class DashboardController extends Controller
                                              ->whereMonth('created_at', $now->month)
                                              ->whereYear('created_at', $now->year)
                                              ->sum('total'),
+            'chart_year'       => $now->year,
+            'chart_labels'     => $chartLabels,
+            'income_chart'     => $incomeChart,
+            'expense_chart'    => $expenseChart,
 
             // Pengajuan stok pending terbaru
             'latest_requests'  => StockRequest::with('branch', 'requestedBy')

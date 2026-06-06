@@ -307,20 +307,21 @@ new Chart(document.getElementById('branchChart'), {
         scales: {
     y: {
         ticks: {
-            color: 'rgba(255, 244, 232, 0.90)',
+            color: '#6b4a36',
             font: { size: 12, weight: '600' },
             callback: val => 'Rp ' + (val / 1000000).toFixed(1) + 'jt'
         },
-        grid: { color: 'rgba(255, 244, 232, 0.22)' }
+        grid: { color: 'rgba(91, 59, 42, 0.12)' }
     },
     x: {
         ticks: {
-            color: 'rgba(255, 244, 232, 0.90)',
+            color: '#6b4a36',
             font: { size: 12, weight: '600' }
         },
         grid: { display: false }
     }
 }
+    }
 });
 
 // ── Chart Laba ────────────────────────────────────────────
@@ -357,20 +358,21 @@ new Chart(document.getElementById('profitChart'), {
         scales: {
     y: {
         ticks: {
-            color: 'rgba(255, 244, 232, 0.90)',
+            color: '#6b4a36',
             font: { size: 12, weight: '600' },
             callback: val => 'Rp ' + (val / 1000000).toFixed(1) + 'jt'
         },
-        grid: { color: 'rgba(255, 244, 232, 0.22)' }
+        grid: { color: 'rgba(91, 59, 42, 0.12)' }
     },
     x: {
         ticks: {
-            color: 'rgba(255, 244, 232, 0.90)',
+            color: '#6b4a36',
             font: { size: 12, weight: '600' }
         },
         grid: { display: false }
     }
 }
+    }
 });
 </script>
 <script>

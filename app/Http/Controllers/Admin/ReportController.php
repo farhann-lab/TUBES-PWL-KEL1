@@ -22,9 +22,10 @@ class ReportController extends Controller
         $incomeChart  = [];
         $expenseChart = [];
         $labels       = [];
+        $monthLabels  = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
         for ($m = 1; $m <= 12; $m++) {
-            $labels[] = DateTime::createFromFormat('!m', $m)->format('M');
+            $labels[] = $monthLabels[$m - 1];
 
             $incomeChart[] = (float) Transaction::where('branch_id', $branchId)
                 ->where('status', 'completed')

@@ -38,9 +38,9 @@
         <p class="text-2xl font-bold text-yellow-600">{{ $summary['pending'] }}</p>
     </div>
     <div class="bg-white p-5 rounded-2xl shadow-soft">
-        <p class="text-xs text-gray-500 mb-1">Total Terverifikasi</p>
-        <p class="text-xl font-bold text-emerald-600">
-            Rp {{ number_format($summary['verified'], 0, ',', '.') }}
+        <p class="text-xs text-gray-500 mb-1">Pengeluaran Terverifikasi</p>
+        <p class="text-2xl font-bold text-emerald-600">
+            {{ number_format($summary['verified'], 0, ',', '.') }} data
         </p>
     </div>
 </div>

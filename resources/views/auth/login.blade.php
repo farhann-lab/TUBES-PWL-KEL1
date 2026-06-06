@@ -199,15 +199,11 @@
                 <!-- ELCO Logo -->
                 <div class="self-end mb-8 opacity-0 animate-fade-in" style="animation-delay:0.1s; animation-fill-mode:forwards;">
                     <div class="flex items-center gap-3">
-                        <svg width="38" height="38" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M24 10 Q26 6 24 2" stroke="#3D1A08" stroke-width="2.2" stroke-linecap="round" fill="none"/>
-                            <path d="M34 10 Q36 6 34 2" stroke="#3D1A08" stroke-width="2.2" stroke-linecap="round" fill="none"/>
-                            <path d="M44 10 Q46 6 44 2" stroke="#3D1A08" stroke-width="2.2" stroke-linecap="round" fill="none"/>
-                            <rect x="14" y="16" width="40" height="36" rx="4" stroke="#3D1A08" stroke-width="3" fill="none"/>
-                            <rect x="22" y="24" width="24" height="20" rx="2" stroke="#3D1A08" stroke-width="2.5" fill="none"/>
-                            <path d="M54 24 Q64 24 64 34 Q64 44 54 44" stroke="#3D1A08" stroke-width="3" stroke-linecap="round" fill="none"/>
-                            <path d="M8 52 Q34 62 60 52" stroke="#3D1A08" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-                        </svg>
+                         <img 
+    src="{{ asset('image/logo-elco.png') }}" 
+    alt="Logo ELCO"
+    class="w-[34px] h-[34px] object-contain scale-[1.2]] -mr-1"
+        />
                         <span class="font-display text-coffee-dark font-bold tracking-widest"
                               style="font-size:1.8rem; letter-spacing:0.15em;">ELCO.</span>
                     </div>

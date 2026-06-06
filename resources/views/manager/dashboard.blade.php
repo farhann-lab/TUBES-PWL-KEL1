@@ -619,7 +619,7 @@
 
                 {{-- Chart Pendapatan --}}
                 <div class="glass-card" style="padding:24px;">
-                    <p class="section-title">Grafik Pendapatan Bulan Ini</p>
+                    <p class="section-title">Grafik Pendapatan & Pengeluaran {{ $data['chart_year'] ?? now()->year }}</p>
                     <div class="chart-canvas-wrap">
                         <canvas 
                             id="revenueChart"
@@ -812,7 +812,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById('revenueChart');
     if (!canvas || !window.Chart) return;
 
-    const totalIncome = Number(canvas.dataset.totalIncome || 0);
+    const chartLabels = @json($data['chart_labels'] ?? []);
+    const incomeData = @json($data['income_chart'] ?? []);
+    const expenseData = @json($data['expense_chart'] ?? []);
+    const totalIncome = incomeData.reduce((sum, value) => sum + Number(value || 0), 0);
 
     let lineColor = '#ff7b6e';
 
@@ -839,10 +842,10 @@ gradient.addColorStop(1, 'rgba(255, 244, 232, 0.02)');
     new Chart(ctx, {
         type: 'line',
         data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+            labels: chartLabels,
             datasets: [{
                 label: 'Pendapatan',
-                data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, totalIncome],
+                data: incomeData,
                 borderColor: lineColor,
                 backgroundColor: gradient,
                 borderWidth: 3,
@@ -853,13 +856,35 @@ gradient.addColorStop(1, 'rgba(255, 244, 232, 0.02)');
                 pointHoverRadius: 7,
                 fill: true,
                 tension: 0.4
+            }, {
+                label: 'Pengeluaran',
+                data: expenseData,
+                borderColor: '#bf573c',
+                backgroundColor: 'rgba(191, 87, 60, 0.10)',
+                borderWidth: 3,
+                pointBackgroundColor: '#fff4e8',
+                pointBorderColor: '#bf573c',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 7,
+                fill: false,
+                tension: 0.4
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { display: false },
+                legend: {
+                    display: true,
+                    labels: {
+                        color: '#fff4e8',
+                        font: {
+                            size: 12,
+                            weight: '700'
+                        }
+                    }
+                },
                 tooltip: {
                     backgroundColor: '#1c100b',
                     titleColor: '#fff4e8',
@@ -870,7 +895,7 @@ gradient.addColorStop(1, 'rgba(255, 244, 232, 0.02)');
                     cornerRadius: 10,
                     callbacks: {
                         label: function (context) {
-                            return 'Pendapatan: Rp ' + Number(context.raw).toLocaleString('id-ID');
+                            return context.dataset.label + ': Rp ' + Number(context.raw).toLocaleString('id-ID');
                         }
                     }
                 }
