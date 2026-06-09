@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
 use App\Models\Promotion;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PromotionController extends Controller
 {
@@ -114,7 +116,13 @@ class PromotionController extends Controller
 
     public function destroy(Promotion $promotion)
     {
-        $promotion->delete();
+        DB::transaction(function () use ($promotion) {
+            Transaction::where('promotion_id', $promotion->id)
+                ->update(['promotion_id' => null]);
+
+            $promotion->delete();
+        });
+
         return back()->with('success', 'Promo berhasil dihapus!');
     }
 }
