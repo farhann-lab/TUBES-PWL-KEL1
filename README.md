@@ -29,7 +29,7 @@ Sistem ELCO memiliki tiga role utama yaitu manager pusat, admin cabang, dan kasi
 
 ### 1. Manager Pusat
 Manager pusat berfungsi sebagai pengontrol utama seluruh cabang dengan hak akses:
-- CRUD stok dan verifikasi permintaan stok dari cabang
+- CRUD stok dan verifikasi permintaan stok dari cabang sekaligus akun admin cabang
 - CRUD data cabang
 - Mengelola menu, harga dasar, dan promo global
 - Melakukan verifikasi keuangan dan laporan cabang
@@ -43,6 +43,7 @@ Admin cabang berfokus pada operasional harian cabang, meliputi:
 - Membuat promo cabang
 - Membatalkan transaksi bermasalah
 - Mengirim laporan mingguan ke pusat
+- Membuat akun kasir di cabang
 
 ### 3. Kasir
 Kasir bertugas melakukan transaksi penjualan, dengan fitur:
