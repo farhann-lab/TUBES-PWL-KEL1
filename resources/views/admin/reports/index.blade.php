@@ -87,7 +87,7 @@
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
 
     {{-- Grafik Pemasukan vs Pengeluaran --}}
-    <div class="xl:col-span-2 bg-white rounded-3xl shadow-soft p-6">
+    <div class="xl:col-span-3 bg-white rounded-3xl shadow-soft p-6">
         <h3 class="font-display font-semibold text-gray-800 mb-4">
             Pemasukan vs Pengeluaran {{ $year }}
         </h3>
@@ -97,7 +97,7 @@
     </div>
 
     {{-- Stok Kritis --}}
-    <div class="bg-white rounded-3xl shadow-soft p-6">
+    <div class="xl:col-span-3 bg-white rounded-3xl shadow-soft p-6">
         <h3 class="font-display font-semibold text-gray-800 mb-4">Stok Kritis</h3>
         @if($criticalStocks->count() > 0)
         <div class="space-y-3">
@@ -107,7 +107,7 @@
                     <p class="text-sm font-semibold text-gray-800">{{ data_get($stock, 'name') }}</p>
                     <p class="text-xs text-gray-500">{{ ucfirst(data_get($stock, 'category', '-')) }}</p>
                 </div>
-                <span class="text-sm font-bold text-red-600">
+                <span class="text-sm font-display font-bold text-red-600">
                     {{ data_get($stock, 'remaining', 0) }} {{ data_get($stock, 'unit', 'sisa') }}
                 </span>
             </div>
@@ -197,7 +197,7 @@
                     </td>
                     <td class="py-3 px-6">
                         <button onclick="openReportTransactionDetail({{ $trx->id }})"
-                            class="text-xs font-medium text-elco-coffee bg-elco-cream px-3 py-2 rounded-xl hover:bg-elco-latte/30 smooth-transition">
+                            class="text-xs font-medium text-black bg-elco-cream px-3 py-2 rounded-xl hover:bg-elco-latte/30 smooth-transition">
                             <i class="ph ph-eye"></i> Detail
                         </button>
                     </td>

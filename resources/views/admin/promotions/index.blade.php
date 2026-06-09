@@ -57,19 +57,23 @@
                     {{ $promo->start_date->format('d M') }} — {{ $promo->end_date->format('d M Y') }}
                 </span>
             </div>
-            <div class="pt-2 border-t border-gray-100">
-                <form id="form-hapus-{{ $promo->id }}" method="POST" action="...">
+            <div class="pt-2 border-t border-gray-100 flex gap-2">
+                <a href="{{ route('admin.promotions.edit', $promo) }}"
+                   class="flex-1 flex items-center justify-center gap-1 rounded-2xl border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 smooth-transition">
+                    <i class="ph ph-pencil-simple"></i> Edit
+                </a>
+                <form id="form-hapus-{{ $promo->id }}" method="POST" action="{{ route('admin.promotions.destroy', $promo) }}" class="flex-1">
                     @csrf
                     @method('DELETE')
                     <button type="button" 
                         onclick="elcoConfirm({
-                            title: 'Hapus Data?',
-                            text: 'Data yang dihapus tidak dapat dikembalikan.',
+                            title: 'Hapus Promo?',
+                            text: 'Promo {{ addslashes($promo->name) }} akan dihapus dari cabang kamu.',
                             confirmText: 'Ya, Hapus',
-                            confirmColor: '#ef4444',
+                            type: 'error',
                             onConfirm: () => document.getElementById('form-hapus-{{ $promo->id }}').submit()
                         })"
-                        class="...">
+                        class="w-full flex items-center justify-center gap-1 rounded-2xl bg-red-500 px-3 py-2 text-xs font-semibold text-white hover:bg-red-600 smooth-transition">
                         <i class="ph ph-trash"></i> Hapus
                     </button>
                 </form>

@@ -32,7 +32,7 @@ Route::get('/', function () {
         'kasir'   => redirect()->route('kasir.transactions.index'),
         default   => redirect('/login'),
     };
-})->middleware('no-cache');
+});
 
 Route::get('/dashboard', function () {
     if (!auth()->check()) return redirect('/login');
@@ -43,16 +43,16 @@ Route::get('/dashboard', function () {
         'kasir'   => redirect()->route('kasir.transactions.index'),
         default   => redirect('/login'),
     };
-})->middleware(['auth', 'verified', 'no-cache'])->name('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware(['auth', 'no-cache'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 // ── MANAGER ──────────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'role:manager', 'no-cache'])
+Route::middleware(['auth', 'role:manager'])
     ->prefix('manager')
     ->name('manager.')
     ->group(function () {
@@ -104,7 +104,7 @@ Route::middleware(['auth', 'role:manager', 'no-cache'])
     });
 
 // ── ADMIN (Admin Cabang) ──────────────────────────────────────────────────────
-Route::middleware(['auth', 'role:admin', 'no-cache'])
+Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
@@ -125,7 +125,7 @@ Route::middleware(['auth', 'role:admin', 'no-cache'])
 
         // Promotions
         Route::resource('promotions', AdminPromo::class)
-             ->only(['index', 'create', 'store', 'destroy']);
+             ->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
 
         // Transactions
         Route::get('transactions', [AdminTransaction::class, 'index'])->name('transactions.index');
@@ -148,7 +148,7 @@ Route::middleware(['auth', 'role:admin', 'no-cache'])
     });
 
 // ── KASIR ─────────────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'role:kasir', 'no-cache'])
+Route::middleware(['auth', 'role:kasir'])
     ->prefix('kasir')
     ->name('kasir.')
     ->group(function () {

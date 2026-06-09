@@ -92,7 +92,7 @@
                     Rp {{ number_format($trx->total, 0, ',', '.') }}
                 </td>
                 <td class="py-4 px-6">
-                    <span class="text-xs px-2 py-1 rounded-lg bg-gray-100 text-gray-600 capitalize font-medium">
+                    <span class="text-xs px-2 py-1 rounded-lg text-black-600 capitalize font-medium">
                         {{ $trx->payment_method }}
                     </span>
                 </td>
@@ -111,7 +111,7 @@
                 <td class="py-4 px-6">
                     <div class="flex flex-wrap gap-2">
                         <button onclick="openDetailModal({{ $trx->id }})"
-                            class="text-xs font-medium text-elco-coffee bg-elco-cream px-3 py-2 rounded-xl hover:bg-elco-latte/30 smooth-transition">
+                            class="text-xs font-medium text-black bg-elco-cream px-3 py-2 rounded-xl hover:bg-elco-latte/30 smooth-transition">
                             <i class="ph ph-eye"></i> Detail
                         </button>
                         @if($canCancel)
